@@ -20,13 +20,11 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { Job } from '../../store/slices/jobsSlice';
 import { Application, ApplicationTemplate } from '../../store/slices/applicationsSlice';
 import { 
-  addApplication, 
   startGeneratingLetter, 
   letterGenerationSuccess,
   startSendingEmail,
   emailSentSuccess,
-  emailSentFailure,
-  updateApplication
+  emailSentFailure
 } from '../../store/slices/applicationsSlice';
 import { ApplicationService } from '../../services/applicationService';
 import { SupabaseService, supabase } from '../../services/supabaseService';
@@ -49,7 +47,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
   const { profile } = useAppSelector(state => state.profile);
   const { user } = useAppSelector(state => state.auth);
   const { templates, generatingLetter, sendingEmail } = useAppSelector(state => state.applications);
-  const { currentModel } = useAppSelector(state => state.ai);
+  
   
   const [step, setStep] = useState<'template' | 'customize' | 'review' | 'send' | 'ai-assist'>('template');
   const [selectedTemplate, setSelectedTemplate] = useState<ApplicationTemplate | null>(null);
@@ -117,13 +115,13 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
     }
 
     // 1. Create a draft application in the database
-    const newApplicationData: Partial<Application> = {
+    const newApplicationData = {
       jobId: job.id,
       jobTitle: job.title,
       company: job.company,
       status: 'draft' as const,
       type: applicationType as 'manual' | 'automatic',
-      coverLetter,
+      coverLetter: coverLetter || '',
       coverLetterFilePath,
       companyEmail,
       customMessage: customInstructions,
@@ -135,6 +133,11 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
 
     try {
       const newApplication = await SupabaseService.addApplication(user.id, newApplicationData);
+
+      if (!newApplication) {
+        dispatch(emailSentFailure('Erreur lors de la création de la candidature'));
+        return;
+      }
 
       // 2. Try to invoke the Edge Function to send the email (if available)
       try {

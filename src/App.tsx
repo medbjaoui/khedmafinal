@@ -20,7 +20,7 @@ import Sidebar from './components/Layout/Sidebar';
 import Dashboard from './pages/Dashboard';
 import CVAnalysis from './pages/CVAnalysis';
 import Jobs from './pages/Jobs';
-import MonCompte from './pages/MonCompte';
+
 import Applications from './pages/Applications';
 import Analytics from './pages/Analytics';
 import Tasks from './pages/Tasks';
