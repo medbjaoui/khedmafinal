@@ -614,7 +614,7 @@ const Profile: React.FC = () => {
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Résumé professionnel</h3>
-              <p className="text-gray-700 leading-relaxed">{profile.summary || 'Aucun résumé professionnel. Ajoutez un résumé pour améliorer votre profil.'}</p>
+              <p className="text-gray-700 leading-relaxed">{profile?.summary || 'Aucun résumé professionnel. Ajoutez un résumé pour améliorer votre profil.'}</p>
             </motion.div>
 
             {/* CV Status */}
@@ -638,7 +638,7 @@ const Profile: React.FC = () => {
                 </button>
               </div>
               
-              {profile.cvFilePath ? (
+              {profile?.cvFilePath ? (
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -646,10 +646,10 @@ const Profile: React.FC = () => {
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">
-                        {profile.originalCVFileName || 'CV.pdf'}
+                        {profile?.originalCVFileName || 'CV.pdf'}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Dernière mise à jour : {profile.lastUpdated ? new Date(profile.lastUpdated).toLocaleDateString('fr-FR') : 'Non spécifié'}
+                        Dernière mise à jour : {profile?.lastUpdated ? new Date(profile.lastUpdated).toLocaleDateString('fr-FR') : 'Non spécifié'}
                       </p>
                     </div>
                   </div>
@@ -703,17 +703,17 @@ const Profile: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <Phone className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-700">{profile.phone || 'Non spécifié'}</span>
+                    <span className="text-gray-700">{profile?.phone || 'Non spécifié'}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Mail className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-700">{profile.email}</span>
+                    <span className="text-gray-700">{profile?.email}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <MapPin className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-700">{profile.location || 'Non spécifié'}</span>
+                    <span className="text-gray-700">{profile?.location || 'Non spécifié'}</span>
                   </div>
-                  {profile.dateOfBirth && (
+                  {profile?.dateOfBirth && (
                     <div className="flex items-center space-x-3">
                       <Calendar className="h-5 w-5 text-gray-400" />
                       <span className="text-gray-700">

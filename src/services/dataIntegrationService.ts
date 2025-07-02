@@ -1,4 +1,5 @@
 import { SupabaseService } from './supabaseService';
+import { supabase } from '../integrations/supabase/client';
 
 /**
  * Service to handle data integration and ensure all components use real data
@@ -19,16 +20,15 @@ export class DataIntegrationService {
     try {
       // Check core tables exist by trying to query them
       const tableChecks = [
-        { name: 'user_profiles', query: () => SupabaseService.supabase.from('user_profiles').select('id').limit(1) },
-        { name: 'jobs', query: () => SupabaseService.supabase.from('jobs').select('id').limit(1) },
-        { name: 'applications', query: () => SupabaseService.supabase.from('applications').select('id').limit(1) },
-        { name: 'experiences', query: () => SupabaseService.supabase.from('experiences').select('id').limit(1) },
-        { name: 'education', query: () => SupabaseService.supabase.from('education').select('id').limit(1) },
-        { name: 'skills', query: () => SupabaseService.supabase.from('skills').select('id').limit(1) },
-        { name: 'languages', query: () => SupabaseService.supabase.from('languages').select('id').limit(1) },
-        { name: 'certifications', query: () => SupabaseService.supabase.from('certifications').select('id').limit(1) },
-        { name: 'saved_jobs', query: () => SupabaseService.supabase.from('saved_jobs').select('id').limit(1) },
-        { name: 'application_templates', query: () => SupabaseService.supabase.from('application_templates').select('id').limit(1) },
+        { name: 'user_profiles', query: () => supabase.from('user_profiles').select('id').limit(1) },
+        { name: 'jobs', query: () => supabase.from('jobs').select('id').limit(1) },
+        { name: 'applications', query: () => supabase.from('applications').select('id').limit(1) },
+        { name: 'experiences', query: () => supabase.from('experiences').select('id').limit(1) },
+        { name: 'education', query: () => supabase.from('education').select('id').limit(1) },
+        { name: 'skills', query: () => supabase.from('skills').select('id').limit(1) },
+        { name: 'languages', query: () => supabase.from('languages').select('id').limit(1) },
+        { name: 'certifications', query: () => supabase.from('certifications').select('id').limit(1) },
+        { name: 'saved_jobs', query: () => supabase.from('saved_jobs').select('id').limit(1) },
       ];
 
       for (const check of tableChecks) {
@@ -45,11 +45,11 @@ export class DataIntegrationService {
 
       // Check optional tables (won't mark as missing, just log)
       const optionalTables = [
-        { name: 'system_alerts', query: () => SupabaseService.supabase.from('system_alerts').select('id').limit(1) },
-        { name: 'system_logs', query: () => SupabaseService.supabase.from('system_logs').select('id').limit(1) },
-        { name: 'ai_settings', query: () => SupabaseService.supabase.from('ai_settings').select('id').limit(1) },
-        { name: 'ai_usage', query: () => SupabaseService.supabase.from('ai_usage').select('id').limit(1) },
-        { name: 'recommendations', query: () => SupabaseService.supabase.from('recommendations').select('id').limit(1) },
+        { name: 'system_alerts', query: () => supabase.from('system_alerts').select('id').limit(1) },
+        { name: 'system_logs', query: () => supabase.from('system_logs').select('id').limit(1) },
+        { name: 'ai_settings', query: () => supabase.from('ai_settings').select('id').limit(1) },
+        { name: 'ai_usage', query: () => supabase.from('ai_usage').select('id').limit(1) },
+        { name: 'recommendations', query: () => supabase.from('recommendations').select('id').limit(1) },
       ];
 
       for (const check of optionalTables) {
@@ -111,7 +111,7 @@ export class DataIntegrationService {
 
       // Test database connection
       try {
-        await SupabaseService.supabase.from('user_profiles').select('id').limit(1);
+        await supabase.from('user_profiles').select('id').limit(1);
       } catch (error) {
         issues.push(`Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }

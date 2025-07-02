@@ -85,10 +85,7 @@ const Settings: React.FC = () => {
     }));
   };
 
-  const handleAISettingsUpdate = (key: string, value: string) => {
-    dispatch(updateSettings({ [key]: value }));
-    console.log('Updated AI setting:', { key, value }); // Use function to remove warning
-  };
+  // Removed unused function
 
   const handleSave = () => {
     // Simulate saving settings

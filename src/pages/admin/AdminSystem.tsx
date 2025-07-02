@@ -17,7 +17,7 @@ import {
   Settings, 
   RefreshCw, 
   Download, 
-  Upload, 
+   
   Trash2, 
   Lock, 
   Unlock, 
