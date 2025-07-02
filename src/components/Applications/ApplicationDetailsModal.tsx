@@ -2,7 +2,6 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
-  Calendar, 
   Mail, 
   FileText, 
   ExternalLink, 
@@ -11,9 +10,7 @@ import {
   MessageSquare,
   Clock,
   CheckCircle,
-  Building,
-  User,
-  Phone
+  Building
 } from 'lucide-react';
 import { Application } from '../../store/slices/applicationsSlice';
 import { format } from 'date-fns';

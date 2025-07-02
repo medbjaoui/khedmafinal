@@ -166,13 +166,13 @@ const CVManager: React.FC = () => {
       
       // Update profile to remove CV path
       await SupabaseService.updateUserProfile(user.id, {
-        cvFilePath: null,
+        cvFilePath: '',
         lastUpdated: new Date().toISOString()
       });
       
       // Update Redux store
       dispatch(updateProfile({ 
-        cvFilePath: null,
+        cvFilePath: '',
         lastUpdated: new Date().toISOString()
       }));
       
