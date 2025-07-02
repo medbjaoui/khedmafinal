@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -35,8 +34,21 @@ import { setProfile } from '../store/slices/profileSlice';
 import { SupabaseService } from '../services/supabaseService';
 
 // Fonction utilitaire pour afficher "il y a X ..."
-function timeAgo(dateString: string | Date) {
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+function timeAgo(dateString: string | Date | null | undefined) {
+  if (!dateString) {
+    return 'Date inconnue';
+  }
+  let date: Date;
+  if (typeof dateString === 'string') {
+    date = new Date(dateString);
+  } else if (dateString instanceof Date) {
+    date = dateString;
+  } else {
+    return 'Date invalide';
+  }
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    return 'Date invalide';
+  }
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   if (seconds < 60) return `il y a ${seconds} sec`;

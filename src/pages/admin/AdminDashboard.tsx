@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAppDispatch } from '../../hooks/redux';
 import { setAdminStats } from '../../store/slices/adminSlice';
+import { motion } from "framer-motion";
 
 // Types
 interface User {
