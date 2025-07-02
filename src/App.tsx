@@ -30,6 +30,10 @@ import Settings from './pages/Settings';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminSystem from './pages/admin/AdminSystem';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminLogs from './pages/admin/AdminLogs';
+import AdminJobs from './pages/admin/AdminJobs';
+import AdminSettings from './pages/admin/AdminSettings';
 import Profile from './pages/Profile';
 
 // Loading Component
@@ -198,34 +202,22 @@ const AppContent: React.FC = () => {
                   } />
                   <Route path="/admin/analytics" element={
                     <ProtectedRoute requiredRole="Admin">
-                      <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <h1 className="text-2xl font-bold mb-4">Statistiques Administrateur</h1>
-                        <p>Tableau de bord des statistiques globales du système.</p>
-                      </div>
+                      <AdminAnalytics />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin/logs" element={
                     <ProtectedRoute requiredRole="Admin">
-                      <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <h1 className="text-2xl font-bold mb-4">Journaux Système</h1>
-                        <p>Consultation des logs et événements du système.</p>
-                      </div>
+                      <AdminLogs />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin/jobs" element={
                     <ProtectedRoute requiredRole="Admin">
-                      <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <h1 className="text-2xl font-bold mb-4">Gestion des Offres d'Emploi</h1>
-                        <p>Interface d'administration des offres d'emploi.</p>
-                      </div>
+                      <AdminJobs />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin/settings" element={
                     <ProtectedRoute requiredRole="Admin">
-                      <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <h1 className="text-2xl font-bold mb-4">Configuration Système</h1>
-                        <p>Paramètres généraux de la plateforme.</p>
-                      </div>
+                      <AdminSettings />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin/database" element={
