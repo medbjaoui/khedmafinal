@@ -92,5 +92,26 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		function({ addUtilities, theme }) {
+			addUtilities({
+				'.bg-background': {
+					'background-color': 'hsl(var(--background))',
+				},
+				'.text-foreground': {
+					'color': 'hsl(var(--foreground))',
+				},
+				'.bg-card': {
+					'background-color': 'hsl(var(--card))',
+				},
+				'.text-card-foreground': {
+					'color': 'hsl(var(--card-foreground))',
+				},
+				'.border-border': {
+					'border-color': 'hsl(var(--border))',
+				},
+			});
+		},
+	],
 } satisfies Config;
