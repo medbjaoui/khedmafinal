@@ -1,345 +1,457 @@
 
-  import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import {
-  Send,
-  Filter,
-  Search,
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Plus, 
+  Search, 
+  Filter, 
+  CheckCircle2, 
+  Clock, 
+  XCircle, 
+  Mail,
+  Calendar,
+  Building2,
+  User,
+  FileText,
+  Briefcase,
+  TrendingUp,
+  AlertCircle,
+  Edit,
+  Trash2,
+  Eye,
+  MoreVertical
 } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Badge } from '../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Progress } from '../components/ui/progress';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '../components/ui/dropdown-menu';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { Application, updateFilters, clearFilters, deleteApplication, startApplicationProcess, setApplications, addTemplate } from '../store/slices/applicationsSlice';
-import ApplicationCard from '../components/Applications/ApplicationCard';
-import ApplicationDetailsModal from '../components/Applications/ApplicationDetailsModal';
-import ApplicationStats from '../components/Applications/ApplicationStats';
+import { setApplications, addApplication } from '../store/slices/applicationsSlice';
 import { SupabaseService } from '../services/supabaseService';
-import { TemplateService } from '../services/templateService';
+import ApplicationModal from '../components/Applications/ApplicationModal';
+import ApplicationDetailsModal from '../components/Applications/ApplicationDetailsModal';
 
 const Applications: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { applications, filters, loading } = useAppSelector(state => state.applications);
-  const { user } = useAppSelector(state => state.auth);
-  const [activeTab, setActiveTab] = useState<'list' | 'stats'>('list');
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+  const { applications } = useAppSelector((state) => state.applications);
+  const { user } = useAppSelector((state) => state.auth);
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
 
-  const tabs = [
-    { id: 'list', label: 'Mes candidatures', icon: Send },
-    { id: 'stats', label: 'Statistiques', icon: Filter },
-  ];
-
-  const fetchApplications = useCallback(async () => {
-    if (!user?.id) return;
-    dispatch(startApplicationProcess());
-    try {
-      const data = await SupabaseService.getUserApplications(user.id);
-      dispatch(setApplications(data));
-    } catch (error: any) {
-      console.error('Failed to fetch applications:', error);
-      // Note: setApplications handles loading state, so we don't need a separate failure action
+  const statusConfig = {
+    pending: { 
+      label: 'En attente', 
+      color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+      icon: Clock,
+      count: applications.filter(app => app.status === 'pending').length
+    },
+    interview: { 
+      label: 'Entretien', 
+      color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+      icon: User,
+      count: applications.filter(app => app.status === 'interview').length
+    },
+    accepted: { 
+      label: 'Acceptée', 
+      color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+      icon: CheckCircle2,
+      count: applications.filter(app => app.status === 'accepted').length
+    },
+    rejected: { 
+      label: 'Refusée', 
+      color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+      icon: XCircle,
+      count: applications.filter(app => app.status === 'rejected').length
     }
-  }, [dispatch, user?.id]);
-
-  const initializeTemplates = useCallback(async () => {
-    if (!user?.id) return;
-    try {
-      const templates = await TemplateService.initializeDefaultTemplates(user.id);
-      templates.forEach(template => {
-        dispatch(addTemplate(template));
-      });
-    } catch (error: any) {
-      console.error('Failed to initialize templates:', error);
-    }
-  }, [dispatch, user?.id]);
+  };
 
   useEffect(() => {
-    fetchApplications();
-    initializeTemplates();
-  }, [fetchApplications, initializeTemplates]);
-
-  const handleFilterChange = (key: string, value: string) => {
-    dispatch(updateFilters({ [key]: value }));
-  };
-
-  const handleClearFilters = () => {
-    dispatch(clearFilters());
-  };
-
-  const handleDeleteApplication = async (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette candidature ?')) {
-      try {
-        await SupabaseService.deleteApplication(id);
-        dispatch(deleteApplication(id));
-      } catch (error: any) {
-        console.error("Error deleting application:", error);
-        // Optionally, show an error message to the user
+    const loadApplications = async () => {
+      if (user) {
+        try {
+          setLoading(true);
+          const data = await SupabaseService.getUserApplications(user.id);
+          dispatch(setApplications(data));
+        } catch (error) {
+          console.error('Error loading applications:', error);
+        } finally {
+          setLoading(false);
+        }
       }
-    }
-  };
+    };
 
-  const handleEditApplication = (application: Application) => {
-    setSelectedApplication(application);
-    // Open edit modal (to be implemented)
-  };
-
-  const handleViewDetails = (application: Application) => {
-    setSelectedApplication(application);
-    setShowDetailsModal(true);
-  };
+    loadApplications();
+  }, [dispatch, user]);
 
   const filteredApplications = applications.filter(app => {
-    const matchesStatus = !filters.status || app.status === filters.status;
-    const matchesType = !filters.type || app.type === filters.type;
-    const matchesCompany = !filters.company || 
-      app.company.toLowerCase().includes(filters.company.toLowerCase());
-    
-    let matchesDateRange = true;
-    if (filters.dateRange) {
-      const appDate = new Date(app.appliedDate);
-      
-      switch (filters.dateRange) {
-        case 'week': {
-          const weekAgo = new Date();
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          matchesDateRange = appDate >= weekAgo;
-          break;
-        }
-        case 'month': {
-          const monthAgo = new Date();
-          monthAgo.setMonth(monthAgo.getMonth() - 1);
-          matchesDateRange = appDate >= monthAgo;
-          break;
-        }
-        case '3months': {
-          const threeMonthsAgo = new Date();
-          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-          matchesDateRange = appDate >= threeMonthsAgo;
-          break;
-        }
-      }
-    }
-    
-    return matchesStatus && matchesType && matchesCompany && matchesDateRange;
+    const matchesSearch = app.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         app.company.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Mes Candidatures
-        </h1>
-        <p className="text-gray-600">
-          Suivez et gérez toutes vos candidatures en un seul endroit
-        </p>
-      </motion.div>
+  const stats = {
+    total: applications.length,
+    thisMonth: applications.filter(app => {
+      const appDate = new Date(app.applied_date);
+      const now = new Date();
+      return appDate.getMonth() === now.getMonth() && appDate.getFullYear() === now.getFullYear();
+    }).length,
+    responseRate: applications.length > 0 
+      ? Math.round((applications.filter(app => app.status !== 'pending').length / applications.length) * 100)
+      : 0,
+    interviews: applications.filter(app => app.status === 'interview' || app.status === 'accepted').length
+  };
 
-      {/* Tabs */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-1"
-      >
-        <div className="flex space-x-1">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'list' | 'stats')}
-                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-medium transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </motion.div>
+  const StatCard = ({ icon: Icon, title, value, description, trend, color }: any) => (
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      className="relative overflow-hidden"
+    >
+      <Card className="h-full bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-0 shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className={`p-3 rounded-lg bg-gradient-to-r ${color}`}>
+              <Icon className="h-6 w-6 text-white" />
+            </div>
+            {trend && (
+              <Badge variant={trend > 0 ? "default" : "destructive"} className="text-xs">
+                {trend > 0 ? '+' : ''}{trend}%
+              </Badge>
+            )}
+          </div>
+          <div className="space-y-2">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{value}</div>
+            <div className="text-sm font-medium text-gray-600 dark:text-gray-300">{title}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{description}</div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 
-      {/* Tab Content */}
+  const ApplicationCard = ({ application }: { application: any }) => {
+    const status = statusConfig[application.status as keyof typeof statusConfig];
+    const StatusIcon = status.icon;
+
+    return (
       <motion.div
-        key={activeTab}
+        layout
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        exit={{ opacity: 0, y: -20 }}
+        whileHover={{ scale: 1.01 }}
+        className="group cursor-pointer"
+        onClick={() => setSelectedApplication(application)}
       >
-        {activeTab === 'stats' && <ApplicationStats />}
-        
-        {activeTab === 'list' && (
-          <div className="space-y-6">
-            {/* Filters */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Filtres ({filteredApplications.length} candidature{filteredApplications.length !== 1 ? 's' : ''})
-                </h3>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  <Filter className="h-4 w-4" />
-                  <span>{showFilters ? 'Masquer' : 'Afficher'} les filtres</span>
-                </button>
+        <Card className="h-full bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 border-0 group-hover:border-blue-200">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1 group-hover:text-blue-600">
+                  {application.job_title}
+                </CardTitle>
+                <CardDescription className="flex items-center gap-2 mt-1">
+                  <Building2 className="h-4 w-4" />
+                  {application.company}
+                </CardDescription>
               </div>
-
-              {showFilters && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="grid grid-cols-1 md:grid-cols-4 gap-4"
-                >
-                  {/* Status Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Statut
-                    </label>
-                    <select
-                      value={filters.status}
-                      onChange={(e) => handleFilterChange('status', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              
+              <div className="flex items-center gap-2">
+                <Badge className={`text-xs ${status.color}`}>
+                  <StatusIcon className="h-3 w-3 mr-1" />
+                  {status.label}
+                </Badge>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <option value="">Tous les statuts</option>
-                      <option value="draft">Brouillon</option>
-                      <option value="sent">Envoyée</option>
-                      <option value="viewed">Vue</option>
-                      <option value="interview">Entretien</option>
-                      <option value="rejected">Refusée</option>
-                      <option value="accepted">Acceptée</option>
-                    </select>
-                  </div>
-
-                  {/* Type Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Type
-                    </label>
-                    <select
-                      value={filters.type}
-                      onChange={(e) => handleFilterChange('type', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">Tous les types</option>
-                      <option value="manual">Manuelle</option>
-                      <option value="automatic">Automatique</option>
-                    </select>
-                  </div>
-
-                  {/* Date Range Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Période
-                    </label>
-                    <select
-                      value={filters.dateRange}
-                      onChange={(e) => handleFilterChange('dateRange', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">Toutes les périodes</option>
-                      <option value="week">Cette semaine</option>
-                      <option value="month">Ce mois</option>
-                      <option value="3months">3 derniers mois</option>
-                    </select>
-                  </div>
-
-                  {/* Company Search */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Entreprise
-                    </label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                      <input
-                        type="text"
-                        placeholder="Rechercher..."
-                        value={filters.company}
-                        onChange={(e) => handleFilterChange('company', e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {(filters.status || filters.type || filters.dateRange || filters.company) && (
-                <div className="mt-4 flex justify-end">
-                  <button
-                    onClick={handleClearFilters}
-                    className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
-                  >
-                    Réinitialiser les filtres
-                  </button>
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>
+                      <Eye className="h-4 w-4 mr-2" />
+                      Voir détails
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Modifier
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Supprimer
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
+            <div className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+              {application.notes || 'Aucune note ajoutée'}
+            </div>
+            
+            {application.interview_date && (
+              <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+                <Calendar className="h-4 w-4" />
+                Entretien le {new Date(application.interview_date).toLocaleDateString('fr-FR')}
+              </div>
+            )}
+            
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <Clock className="h-3 w-3" />
+                {new Date(application.applied_date).toLocaleDateString('fr-FR')}
+              </div>
+              
+              {application.cover_letter && (
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <FileText className="h-3 w-3" />
+                  Lettre jointe
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  };
 
-            {/* Applications List */}
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+        >
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Mes Candidatures
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300 mt-2">
+              Suivez l'évolution de vos candidatures et optimisez votre recherche
+            </p>
+          </div>
+          
+          <Button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Nouvelle Candidature
+          </Button>
+        </motion.div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            icon={Briefcase}
+            title="Total Candidatures"
+            value={stats.total}
+            description="Depuis le début"
+            trend={15}
+            color="from-blue-500 to-blue-600"
+          />
+          <StatCard
+            icon={Calendar}
+            title="Ce Mois"
+            value={stats.thisMonth}
+            description="Nouvelles candidatures"
+            trend={-5}
+            color="from-green-500 to-green-600"
+          />
+          <StatCard
+            icon={TrendingUp}
+            title="Taux de Réponse"
+            value={`${stats.responseRate}%`}
+            description="Réponses reçues"
+            trend={12}
+            color="from-purple-500 to-purple-600"
+          />
+          <StatCard
+            icon={User}
+            title="Entretiens"
+            value={stats.interviews}
+            description="Obtenus"
+            trend={25}
+            color="from-orange-500 to-orange-600"
+          />
+        </div>
+
+        {/* Progress Overview */}
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-0">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Répartition par Statut</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(statusConfig).map(([key, config]) => (
+                <div key={key} className="text-center space-y-2">
+                  <div className="flex items-center justify-center">
+                    <config.icon className="h-8 w-8 text-gray-600" />
+                  </div>
+                  <div className="text-2xl font-bold">{config.count}</div>
+                  <div className="text-sm text-gray-600">{config.label}</div>
+                  <Progress 
+                    value={applications.length > 0 ? (config.count / applications.length) * 100 : 0} 
+                    className="h-2" 
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Search and Filters */}
+        <Card className="bg-white dark:bg-gray-800 shadow-lg border-0">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div className="flex flex-col md:flex-row gap-4 flex-1">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Rechercher par entreprise ou poste..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 min-w-[150px]"
+                >
+                  <option value="all">Tous les statuts</option>
+                  {Object.entries(statusConfig).map(([key, config]) => (
+                    <option key={key} value={key}>
+                      {config.label} ({config.count})
+                    </option>
+                  ))}
+                </select>
               </div>
-            ) : filteredApplications.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {filteredApplications.map((application, index) => (
-                  <motion.div
-                    key={application.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index }}
-                  >
-                    <ApplicationCard
-                      application={application}
-                      onEdit={handleEditApplication}
-                      onDelete={handleDeleteApplication}
-                      onViewDetails={handleViewDetails}
-                    />
-                  </motion.div>
+
+              <Button variant="outline" className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filtres avancés
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Applications Content */}
+        <Tabs value={statusFilter} onValueChange={setStatusFilter} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 bg-white dark:bg-gray-800 shadow-sm">
+            <TabsTrigger value="all" className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4" />
+              Toutes ({applications.length})
+            </TabsTrigger>
+            {Object.entries(statusConfig).map(([key, config]) => (
+              <TabsTrigger key={key} value={key} className="flex items-center gap-2">
+                <config.icon className="h-4 w-4" />
+                {config.label} ({config.count})
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <TabsContent value={statusFilter} className="space-y-6">
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="bg-gray-200 dark:bg-gray-700 h-48 rounded-lg"></div>
+                  </div>
                 ))}
               </div>
+            ) : filteredApplications.length === 0 ? (
+              <Card className="bg-gray-50 dark:bg-gray-800">
+                <CardContent className="p-12 text-center">
+                  {applications.length === 0 ? (
+                    <>
+                      <Briefcase className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                        Aucune candidature
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-4">
+                        Commencez votre recherche d'emploi en ajoutant votre première candidature
+                      </p>
+                      <Button 
+                        onClick={() => setIsModalOpen(true)}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Ajouter une candidature
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                        Aucun résultat
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300">
+                        Aucune candidature ne correspond à vos critères de recherche
+                      </p>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
             ) : (
-              <div className="text-center py-12">
-                <Send className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {applications.length === 0 ? 'Aucune candidature' : 'Aucun résultat'}
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {applications.length === 0 
-                    ? 'Vous n\'avez pas encore envoyé de candidature'
-                    : 'Aucune candidature ne correspond à vos critères'
-                  }
-                </p>
-                {applications.length === 0 && (
-                  <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                    Découvrir les offres
-                  </button>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <AnimatePresence>
+                  {filteredApplications.map((application) => (
+                    <ApplicationCard 
+                      key={application.id} 
+                      application={application} 
+                    />
+                  ))}
+                </AnimatePresence>
               </div>
             )}
-          </div>
-        )}
-      </motion.div>
+          </TabsContent>
+        </Tabs>
 
-      {/* Application Details Modal */}
-      {showDetailsModal && selectedApplication && (
-        <ApplicationDetailsModal
-          isOpen={showDetailsModal}
-          onClose={() => {
-            setShowDetailsModal(false);
-            setSelectedApplication(null);
+        {/* Modals */}
+        <ApplicationModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={(newApplication) => {
+            dispatch(addApplication(newApplication));
+            setIsModalOpen(false);
           }}
-          application={selectedApplication}
         />
-      )}
+
+        {selectedApplication && (
+          <ApplicationDetailsModal
+            application={selectedApplication}
+            isOpen={!!selectedApplication}
+            onClose={() => setSelectedApplication(null)}
+            onUpdate={(updatedApplication) => {
+              // Handle update logic here
+              setSelectedApplication(null);
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };
