@@ -246,7 +246,7 @@ ${rawText}`;
     };
   }
   
-  private convertToUserProfile(data: CVExtractedData, rawText: string): UserProfile {
+  private convertToUserProfile(data: CVExtractedData, _rawText: string): UserProfile {
     const personalInfo = data.personalInfo || {};
     const nameParts = personalInfo.name ? personalInfo.name.split(' ') : ['', ''];
     

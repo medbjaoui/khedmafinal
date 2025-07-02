@@ -266,7 +266,7 @@ export class CVService {
     try {
       // 1. Upload CV to Supabase Storage
       const filePath = `cvs/${userId}/${file.name}`;
-      const uploadData = await SupabaseService.uploadFile('cvs', filePath, file);
+      // const uploadData = await SupabaseService.uploadFile('cvs', filePath, file);
       
       // Get the public URL for the uploaded file
       const publicUrl = SupabaseService.getFileUrl('cvs', filePath);

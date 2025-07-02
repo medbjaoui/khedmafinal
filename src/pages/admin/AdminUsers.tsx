@@ -3,20 +3,20 @@ import { motion } from 'framer-motion';
 import { 
   Users, 
   Search, 
-  Filter, 
-  Plus,
+  // Filter, 
+  // Plus,
   Edit3,
   Trash2,
   Shield,
   ShieldCheck,
-  ShieldX,
-  Mail,
-  Calendar,
-  MoreVertical,
+  // ShieldX,
+  // Mail,
+  // Calendar,
+  // MoreVertical,
   UserPlus,
   Download,
-  Upload,
-  Eye,
+  // Upload,
+  // Eye,
   Ban,
   CheckCircle,
   XCircle,
@@ -102,7 +102,7 @@ const AdminUsers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'Admin' | 'User' | 'Premium'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'suspended'>('all');
-  const [showAddModal, setShowAddModal] = useState(false);
+  // const [showAddModal, setShowAddModal] = useState(false);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = searchTerm === '' || 
@@ -203,7 +203,7 @@ const AdminUsers: React.FC = () => {
           </button>
           
           <button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => console.log('Add user modal')}
             className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             <UserPlus className="h-4 w-4" />

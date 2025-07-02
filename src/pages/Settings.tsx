@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { logoutUser } from '../store/slices/authSlice';
-import { updateSettings } from '../store/slices/aiSlice';
+// import { updateSettings } from '../store/slices/aiSlice';
 import AIModelSelector from '../components/AI/AIModelSelector';
 
 const Settings: React.FC = () => {

@@ -69,8 +69,8 @@ interface BackupStatus {
 const AdminSystem: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'performance' | 'logs' | 'backup' | 'security' | 'ai'>('overview');
   const [refreshing, setRefreshing] = useState(false);
-  const [loadingData, setLoadingData] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [loadingData, setLoadingData] = useState(true);
+  // const [error, setError] = useState<string | null>(null);
 
   // State for real data
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
@@ -91,8 +91,8 @@ const AdminSystem: React.FC = () => {
   ];
 
   const fetchSystemData = useCallback(async () => {
-    setLoadingData(true);
-    setError(null);
+    // setLoadingData(true);
+    // setError(null);
     try {
       const [metrics, services, logs, backups] = await Promise.all([
         SupabaseService.getSystemMetrics(),
@@ -120,9 +120,9 @@ const AdminSystem: React.FC = () => {
       });
     } catch (err) {
       console.error('Error fetching system data:', err);
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue lors du chargement des données système.');
+      // setError(err instanceof Error ? err.message : 'Une erreur est survenue lors du chargement des données système.');
     } finally {
-      setLoadingData(false);
+      // setLoadingData(false);
       setRefreshing(false);
     }
   }, []);
@@ -136,14 +136,14 @@ const AdminSystem: React.FC = () => {
     await fetchSystemData();
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'running': return 'text-green-600';
-      case 'warning': return 'text-yellow-600';
-      case 'error': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
+  // const getStatusColor = (status: string) => {
+  //   switch (status) {
+  //     case 'running': return 'text-green-600';
+  //     case 'warning': return 'text-yellow-600';
+  //     case 'error': return 'text-red-600';
+  //     default: return 'text-gray-600';
+  //   }
+  // };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -726,10 +726,10 @@ const AdminSystem: React.FC = () => {
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full ${
-                        systemMetrics?.systemLoad > 80 ? 'bg-red-500' : 
-                        systemMetrics?.systemLoad > 60 ? 'bg-yellow-500' : 'bg-green-500'
+                        (systemMetrics?.systemLoad || 0) > 80 ? 'bg-red-500' : 
+                        (systemMetrics?.systemLoad || 0) > 60 ? 'bg-yellow-500' : 'bg-green-500'
                       }`}
-                      style={{ width: `${systemMetrics?.systemLoad}%` }}
+                      style={{ width: `${systemMetrics?.systemLoad || 0}%` }}
                     />
                   </div>
                 </div>
@@ -742,10 +742,10 @@ const AdminSystem: React.FC = () => {
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full ${
-                        systemMetrics?.memoryUsage > 80 ? 'bg-red-500' : 
-                        systemMetrics?.memoryUsage > 60 ? 'bg-yellow-500' : 'bg-green-500'
+                        (systemMetrics?.memoryUsage || 0) > 80 ? 'bg-red-500' : 
+                        (systemMetrics?.memoryUsage || 0) > 60 ? 'bg-yellow-500' : 'bg-green-500'
                       }`}
-                      style={{ width: `${systemMetrics?.memoryUsage}%` }}
+                      style={{ width: `${systemMetrics?.memoryUsage || 0}%` }}
                     />
                   </div>
                 </div>
@@ -758,10 +758,10 @@ const AdminSystem: React.FC = () => {
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full ${
-                        systemMetrics?.diskUsage > 80 ? 'bg-red-500' : 
-                        systemMetrics?.diskUsage > 60 ? 'bg-yellow-500' : 'bg-green-500'
+                        (systemMetrics?.diskUsage || 0) > 80 ? 'bg-red-500' : 
+                        (systemMetrics?.diskUsage || 0) > 60 ? 'bg-yellow-500' : 'bg-green-500'
                       }`}
-                      style={{ width: `${systemMetrics?.diskUsage}%` }}
+                      style={{ width: `${systemMetrics?.diskUsage || 0}%` }}
                     />
                   </div>
                 </div>

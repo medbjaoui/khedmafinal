@@ -463,7 +463,7 @@ export const getAIService = (config?: AIConfig): AIService => {
   return aiServiceInstance;
 };
 
-export const generateProfileRecommendations = async (profile: UserProfile, userId: string): Promise<ProfileRecommendation[]> => {
+export const generateProfileRecommendations = async (profile: UserProfile, _userId: string): Promise<ProfileRecommendation[]> => {
   try {
     const prompt = `
 Analysez le profil professionnel suivant et générez des recommandations personnalisées pour l'améliorer.

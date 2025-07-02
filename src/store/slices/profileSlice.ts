@@ -442,7 +442,7 @@ function generateRecommendations(profile: UserProfile): ProfileRecommendation[] 
     });
   } else {
     // Check for incomplete experiences
-    experiences.forEach((exp, index) => {
+    experiences.forEach((exp) => {
       if (!exp.description || exp.description.length < 50) {
         recommendations.push({
           id: `improve-exp-${exp.id}`,

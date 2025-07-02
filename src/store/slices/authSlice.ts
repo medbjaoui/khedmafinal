@@ -126,7 +126,7 @@ export const restoreUserSession = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
   'auth/logout',
-  async (_, { rejectWithValue }) => {
+  async () => {
     try {
       await AuthService.signOut();
       return true;

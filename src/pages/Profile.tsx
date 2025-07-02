@@ -732,7 +732,7 @@ const Profile: React.FC = () => {
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Liens professionnels</h3>
                 <div className="space-y-3">
-                  {profile.linkedin ? (
+                  {profile?.linkedin ? (
                     <a
                       href={profile.linkedin}
                       target="_blank"
@@ -750,7 +750,7 @@ const Profile: React.FC = () => {
                     </div>
                   )}
                   
-                  {profile.github ? (
+                  {profile?.github ? (
                     <a
                       href={profile.github}
                       target="_blank"
@@ -768,7 +768,7 @@ const Profile: React.FC = () => {
                     </div>
                   )}
                   
-                  {profile.website ? (
+                  {profile?.website ? (
                     <a
                       href={profile.website}
                       target="_blank"
@@ -786,7 +786,7 @@ const Profile: React.FC = () => {
                     </div>
                   )}
                   
-                  {profile.portfolio ? (
+                  {profile?.portfolio ? (
                     <a
                       href={profile.portfolio}
                       target="_blank"
@@ -829,9 +829,9 @@ const Profile: React.FC = () => {
                 </button>
               </div>
 
-              {profile.experiences.length > 0 ? (
+              {(profile?.experiences?.length || 0) > 0 ? (
                 <div className="space-y-6">
-                  {profile.experiences.map((exp) => (
+                  {profile?.experiences?.map((exp) => (
                     <div key={exp.id} className="border border-gray-200 rounded-lg p-5 hover:border-blue-200 hover:shadow-sm transition-all">
                       <div className="flex justify-between">
                         <div className="flex-1">
@@ -926,9 +926,9 @@ const Profile: React.FC = () => {
                 </button>
               </div>
 
-              {profile.education.length > 0 ? (
+              {(profile?.education?.length || 0) > 0 ? (
                 <div className="space-y-6">
-                  {profile.education.map((edu) => (
+                  {profile?.education?.map((edu) => (
                     <div key={edu.id} className="border border-gray-200 rounded-lg p-5 hover:border-blue-200 hover:shadow-sm transition-all">
                       <div className="flex justify-between">
                         <div>
@@ -1008,9 +1008,9 @@ const Profile: React.FC = () => {
                   </button>
                 </div>
 
-                {profile.skills.length > 0 ? (
+                {(profile?.skills?.length || 0) > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {profile.skills.map((skill, index) => (
+                    {profile?.skills?.map((skill, index) => (
                       <div
                         key={index}
                         className="px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 flex items-center space-x-2 group"
@@ -1066,9 +1066,9 @@ const Profile: React.FC = () => {
                   </button>
                 </div>
 
-                {profile.languages.length > 0 ? (
+                {(profile?.languages?.length || 0) > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {profile.languages.map((language, index) => (
+                    {profile?.languages?.map((language, index) => (
                       <div key={index} className="text-center p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <p className="font-medium text-gray-900">{language.name}</p>
                         <p className="text-sm text-gray-600">{language.level}</p>
@@ -1117,9 +1117,9 @@ const Profile: React.FC = () => {
                 </button>
               </div>
 
-              {profile.certifications.length > 0 ? (
+              {(profile?.certifications?.length || 0) > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profile.certifications.map((cert) => (
+                  {profile?.certifications?.map((cert) => (
                     <div key={cert.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-200 hover:shadow-sm transition-all">
                       <div className="flex justify-between">
                         <div>
@@ -1329,21 +1329,21 @@ const Profile: React.FC = () => {
                     <div className="flex items-center space-x-3">
                       <User className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="font-medium text-gray-900">{profile.firstName} {profile.lastName}</p>
+                        <p className="font-medium text-gray-900">{profile?.firstName} {profile?.lastName}</p>
                         <p className="text-sm text-gray-600">Nom complet</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Mail className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="font-medium text-gray-900">{profile.email}</p>
+                        <p className="font-medium text-gray-900">{profile?.email}</p>
                         <p className="text-sm text-gray-600">Email</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Phone className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="font-medium text-gray-900">{profile.phone || 'Non renseigné'}</p>
+                        <p className="font-medium text-gray-900">{profile?.phone || 'Non renseigné'}</p>
                         <p className="text-sm text-gray-600">Téléphone</p>
                       </div>
                     </div>
@@ -1352,18 +1352,18 @@ const Profile: React.FC = () => {
                     <div className="flex items-center space-x-3">
                       <MapPin className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="font-medium text-gray-900">{profile.location || 'Non renseigné'}</p>
+                        <p className="font-medium text-gray-900">{profile?.location || 'Non renseigné'}</p>
                         <p className="text-sm text-gray-600">Localisation</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Briefcase className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="font-medium text-gray-900">{profile.title || 'Non renseigné'}</p>
+                        <p className="font-medium text-gray-900">{profile?.title || 'Non renseigné'}</p>
                         <p className="text-sm text-gray-600">Titre professionnel</p>
                       </div>
                     </div>
-                    {profile.dateOfBirth && (
+                    {profile?.dateOfBirth && (
                       <div className="flex items-center space-x-3">
                         <Calendar className="h-5 w-5 text-gray-400" />
                         <div>
@@ -1479,7 +1479,7 @@ const Profile: React.FC = () => {
                         </div>
                         <div className="md:col-span-2">
                           <label className="block text-sm font-medium text-gray-700 mb-1">Réalisations</label>
-                          {formData.newExperience.achievements.map((achievement, index) => (
+                          {formData.newExperience.achievements.map((achievement: string, index: number) => (
                             <div key={index} className="flex items-center space-x-2 mb-2">
                               <input
                                 type="text"
@@ -1526,7 +1526,7 @@ const Profile: React.FC = () => {
                   )}
 
                   <div className="space-y-4">
-                    {profile.experiences.map((exp, index) => (
+                    {profile?.experiences?.map((exp) => (
                       <div key={exp.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-200 transition-all">
                         <div className="flex justify-between items-start">
                           <div>
@@ -1673,7 +1673,7 @@ const Profile: React.FC = () => {
                   )}
 
                   <div className="space-y-4">
-                    {profile.education.map((edu) => (
+                    {profile?.education?.map((edu) => (
                       <div key={edu.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-200 transition-all">
                         <div className="flex justify-between items-start">
                           <div>
@@ -1786,7 +1786,7 @@ const Profile: React.FC = () => {
                   )}
 
                   <div className="flex flex-wrap gap-2">
-                    {profile.skills.map((skill, index) => (
+                    {profile?.skills?.map((skill, index) => (
                       <div
                         key={index}
                         className="px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 flex items-center space-x-2 group"
@@ -1901,7 +1901,7 @@ const Profile: React.FC = () => {
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {profile.certifications.map((cert) => (
+                    {profile?.certifications?.map((cert) => (
                       <div key={cert.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-200 transition-all">
                         <div className="flex justify-between items-start">
                           <div>

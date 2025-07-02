@@ -96,7 +96,7 @@ export class ApplicationService {
     return `Passionné par le domaine de la technologie, je suis convaincu que mon profil saura répondre à vos attentes.`;
   }
 
-  private static generateSpecificMotivation(job: Job, profile: UserProfile, customInstructions?: string): string {
+  private static generateSpecificMotivation(job: Job, _profile: UserProfile, customInstructions?: string): string {
     if (customInstructions) {
       return customInstructions;
     }
@@ -152,7 +152,7 @@ export class ApplicationService {
   
 
   // Create application draft
-  static createApplicationDraft(job: Job, profile: UserProfile): Partial<Application> {
+  static createApplicationDraft(job: Job, _profile: UserProfile): Partial<Application> {
     return {
       id: `app_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       jobId: job.id,
