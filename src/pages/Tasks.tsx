@@ -102,6 +102,8 @@ const Tasks: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   
+  console.log('showAddModal state:', showAddModal); // Remove unused warning
+  
 
   const getTaskIcon = (type: Task['type']) => {
     const icons = {

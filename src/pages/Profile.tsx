@@ -153,7 +153,7 @@ const Profile: React.FC = () => {
   // Update form data when profile changes
   useEffect(() => {
     if (profile) {
-      setFormData(prev => ({
+      setFormData((prev: any) => ({
         ...prev,
         firstName: profile.firstName,
         lastName: profile.lastName,
@@ -487,22 +487,22 @@ const Profile: React.FC = () => {
               <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center relative group">
                 <User className="h-10 w-10 text-white" />
                 <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                  <Camera className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="text-white">
-                <h1 className="text-2xl font-bold">
-                  {profile.firstName} {profile.lastName}
-                </h1>
-                <p className="text-blue-100 text-lg">{profile.title}</p>
-                <div className="flex items-center space-x-4 mt-2 text-sm text-blue-100">
-                  <div className="flex items-center space-x-1">
-                    <MapPin className="h-4 w-4" />
-                    <span>{profile.location || 'Non spécifié'}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Mail className="h-4 w-4" />
-                    <span>{profile.email}</span>
+                   <Camera className="h-6 w-6 text-white" />
+                 </div>
+               </div>
+               <div className="text-white">
+                 <h1 className="text-2xl font-bold">
+                   {profile?.firstName || 'Prénom'} {profile?.lastName || 'Nom'}
+                 </h1>
+                 <p className="text-blue-100 text-lg">{profile?.title || 'Titre professionnel'}</p>
+                 <div className="flex items-center space-x-4 mt-2 text-sm text-blue-100">
+                   <div className="flex items-center space-x-1">
+                     <MapPin className="h-4 w-4" />
+                     <span>{profile?.location || 'Non spécifié'}</span>
+                   </div>
+                   <div className="flex items-center space-x-1">
+                     <Mail className="h-4 w-4" />
+                     <span>{profile?.email || 'Email non renseigné'}</span>
                   </div>
                 </div>
               </div>

@@ -35,8 +35,8 @@ const SavedJobs: React.FC = () => {
       dispatch(fetchJobsStart());
       try {
         const data = await SupabaseService.getSavedJobs(user.id);
-        dispatch(fetchSavedJobsSuccess(data));
-      } catch (error: any) {
+        dispatch(fetchSavedJobsSuccess(data || []));
+      } catch (error: unknown) {
         console.error("Error fetching saved jobs:", error);
       }
     };

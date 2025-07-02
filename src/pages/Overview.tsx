@@ -21,7 +21,7 @@ const Overview: React.FC = () => {
   const { applications } = useAppSelector(state => state.applications);
   const { current: currentCV } = useAppSelector(state => state.cv);
   const { jobs } = useAppSelector(state => state.jobs);
-  const { profile, profileCompletion } = useAppSelector(state => state.profile);
+  const { profileCompletion } = useAppSelector(state => state.profile);
   const { user } = useAppSelector(state => state.auth);
 
   const thisWeekApplications = applications.filter(app => {

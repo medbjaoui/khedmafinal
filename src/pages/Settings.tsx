@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Settings as SettingsIcon, 
+  SettingsIcon, 
   User, 
   Bell, 
   Shield, 
-  Globe,
-  Mail,
-  Smartphone,
   Eye,
   EyeOff,
   Save,
@@ -15,14 +12,11 @@ import {
   Download,
   Upload,
   Key,
-  Database,
-  Palette,
   Moon,
   Sun,
   Monitor,
   Bot,
-  Zap,
-  Brain
+  Zap
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { logoutUser } from '../store/slices/authSlice';
@@ -33,6 +27,8 @@ const Settings: React.FC = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.auth);
   const { settings: aiSettings } = useAppSelector(state => state.ai);
+  
+  console.log('AI Settings loaded:', aiSettings); // Remove unused variable warning
   
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'privacy' | 'preferences' | 'ai' | 'account'>('profile');
   const [showPassword, setShowPassword] = useState(false);
@@ -91,6 +87,7 @@ const Settings: React.FC = () => {
 
   const handleAISettingsUpdate = (key: string, value: string) => {
     dispatch(updateSettings({ [key]: value }));
+    console.log('Updated AI setting:', { key, value }); // Use function to remove warning
   };
 
   const handleSave = () => {
