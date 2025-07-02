@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   CheckCircle, 
   Clock, 
-  AlertTriangle, 
   Plus, 
   Calendar,
-  Filter,
   Search,
   MoreVertical,
   Edit3,
