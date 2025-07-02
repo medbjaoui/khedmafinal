@@ -101,6 +101,7 @@ const Tasks: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<'all' | Task['type']>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  
 
   const getTaskIcon = (type: Task['type']) => {
     const icons = {
