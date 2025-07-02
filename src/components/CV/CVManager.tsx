@@ -99,7 +99,6 @@ const CVManager: React.FC = () => {
       const filePath = `cvs/${user.id}/${timestamp}_${file.name}`;
       
       await SupabaseService.uploadFile('cvs', filePath, file);
-      const publicUrl = SupabaseService.getFileUrl('cvs', filePath);
       
       // Update profile with new CV path
       await SupabaseService.updateUserProfile(user.id, {

@@ -103,7 +103,6 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header 
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
-        isMobileMenuOpen={sidebarOpen}
       />
       
       <div className="flex flex-1 overflow-hidden">

@@ -6,7 +6,6 @@ import {
   Clock, 
   DollarSign, 
   Building, 
-  Calendar,
   ExternalLink,
   Bookmark,
   Send,
@@ -19,8 +18,6 @@ import {
 import { Job } from '../../store/slices/jobsSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { saveJob, unsaveJob } from '../../store/slices/jobsSlice';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 interface JobDetailsModalProps {
   isOpen: boolean;

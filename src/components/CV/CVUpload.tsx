@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, FileText, CheckCircle, AlertCircle, Eye, Check, X } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { uploadCVStart, uploadCVSuccess, uploadCVFailure } from '../../store/slices/cvSlice';

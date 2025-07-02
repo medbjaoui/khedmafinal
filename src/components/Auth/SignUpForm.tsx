@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, UserPlus, AlertCircle, Loader2, User, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, UserPlus, AlertCircle, Loader2, User } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { signUpUser, clearError } from '../../store/slices/authSlice';
 import { Link, useNavigate } from 'react-router-dom';

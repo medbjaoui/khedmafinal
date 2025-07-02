@@ -7,10 +7,11 @@ import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   onMenuToggle: () => void;
-  isMobileMenuOpen: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuToggle, isMobileMenuOpen }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  onMenuToggle
+}) => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.auth);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
