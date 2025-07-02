@@ -132,7 +132,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
     };
 
     try {
-      const newApplication = await SupabaseService.addApplication(user.id, newApplicationData);
+      const newApplication = await SupabaseService.addApplication(user.id, newApplicationData) as Application | null;
 
       if (!newApplication) {
         dispatch(emailSentFailure('Erreur lors de la création de la candidature'));

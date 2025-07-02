@@ -7,7 +7,6 @@ import {
   Settings, 
   Key, 
   CheckCircle, 
-  AlertCircle,
   Info
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';

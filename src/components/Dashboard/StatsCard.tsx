@@ -1,5 +1,5 @@
 import React from 'react';
-import { DivideIcon as LucideIcon } from 'lucide-react';
+
 import { motion } from 'framer-motion';
 
 interface StatsCardProps {
@@ -7,7 +7,7 @@ interface StatsCardProps {
   value: string | number;
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
   color: 'blue' | 'green' | 'orange' | 'purple';
 }
 
