@@ -69,14 +69,14 @@ const AdminDashboard: React.FC = () => {
         }
 
         const [usersData, alertsData] = await Promise.all([
-          SupabaseService.getUsers({ limit: 1000 }),
-          SupabaseService.getSystemAlerts({ limit: 100 })
+          SupabaseService.getUsers(),
+          SupabaseService.getSystemAlerts()
         ]);
 
         // Process stats
         const sevenDaysAgo = subDays(new Date(), 7);
-        const newUsers = usersData.filter(u => new Date(u.created_at) >= sevenDaysAgo);
-        const unresolvedAlerts = alertsData.filter(a => !a.resolved);
+        const newUsers = usersData.filter((u: any) => new Date(u.created_at) >= sevenDaysAgo);
+        const unresolvedAlerts = alertsData.filter((a: any) => !a.resolved);
         const currentStats = {
           totalUsers: usersData.length,
           newUsersLast7Days: newUsers.length,
@@ -87,9 +87,9 @@ const AdminDashboard: React.FC = () => {
 
         // Process recent users
         setRecentUsers(usersData
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           .slice(0, 5)
-          .map(u => ({ id: u.id, email: u.email || 'N/A', createdAt: u.created_at }))
+          .map((u: any) => ({ id: u.id, email: u.email || 'N/A', createdAt: u.created_at }))
         );
 
         // Process system alerts
@@ -100,14 +100,14 @@ const AdminDashboard: React.FC = () => {
         );
 
         // Process user registration chart data
-        const registrationCounts = usersData.reduce((acc, user) => {
+        const registrationCounts = usersData.reduce((acc: any, user: any) => {
           const date = format(new Date(user.created_at), 'yyyy-MM-dd');
           acc[date] = (acc[date] || 0) + 1;
           return acc;
         }, {} as Record<string, number>);
 
         const chartData = Object.entries(registrationCounts)
-          .map(([date, count]) => ({ date, count }))
+          .map(([date, count]) => ({ date, count: count as number }))
           .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         setUserRegistrationData(chartData);
 
@@ -122,7 +122,7 @@ const AdminDashboard: React.FC = () => {
     fetchData();
   }, [navigate, dispatch]);
 
-  const StatCard = ({ icon, title, value, description, colorClass }) => (
+  const StatCard = ({ icon, title, value, description, colorClass }: any) => (
     <div className={`bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-start`}>
       <div className={`p-3 rounded-full mr-4 ${colorClass}`}>
         {icon}
@@ -135,7 +135,7 @@ const AdminDashboard: React.FC = () => {
     </div>
   );
 
-  const AlertLevelIndicator = ({ level }) => {
+  const AlertLevelIndicator = ({ level }: { level: string }) => {
     const levelInfo = {
       error: { color: 'red-500', icon: <AlertTriangle size={16} /> },
       warning: { color: 'yellow-500', icon: <AlertTriangle size={16} /> },

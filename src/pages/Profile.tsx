@@ -32,7 +32,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
-import { updateProfile, addExperience, addEducation, addSkill, addCertification, removeExperience, removeEducation, removeSkill, removeCertification, fetchProfileStart, fetchProfileSuccess, fetchProfileFailure, UserProfile } from '../store/slices/profileSlice';
+import { updateProfile, addExperience, addEducation, addSkill, addCertification, removeExperience, removeEducation, removeSkill, removeCertification, fetchProfileStart, fetchProfileSuccess, fetchProfileFailure } from '../store/slices/profileSlice';
 import { SupabaseService } from '../services/supabaseService';
 import CVUploadZone from '../components/Profile/CVUploadZone';
 import CoverLettersManagement from '../components/Profile/CoverLettersManagement';
@@ -180,14 +180,14 @@ const Profile: React.FC = () => {
   ];
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       [field]: value
     }));
   };
 
   const handleNestedInputChange = (section: string, field: string, value: string | boolean) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       [section]: {
         ...prev[section as keyof typeof prev] as Record<string, unknown>,
@@ -200,7 +200,7 @@ const Profile: React.FC = () => {
     const achievements = [...(formData.newExperience.achievements || [''])];
     achievements[index] = value;
     
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       newExperience: {
         ...prev.newExperience,
@@ -210,7 +210,7 @@ const Profile: React.FC = () => {
   };
 
   const addAchievementField = () => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       newExperience: {
         ...prev.newExperience,
@@ -223,7 +223,7 @@ const Profile: React.FC = () => {
     const achievements = [...formData.newExperience.achievements];
     achievements.splice(index, 1);
     
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       newExperience: {
         ...prev.newExperience,
@@ -263,10 +263,10 @@ const Profile: React.FC = () => {
       dispatch(addExperience({
         id: Date.now().toString(),
         ...formData.newExperience,
-        achievements: formData.newExperience.achievements.filter(a => a.trim())
+        achievements: formData.newExperience.achievements.filter((a: string) => a.trim())
       }));
       
-      setFormData(prev => ({
+      setFormData((prev: any) => ({
         ...prev,
         newExperience: {
           company: '',
@@ -294,7 +294,7 @@ const Profile: React.FC = () => {
         ...formData.newEducation
       }));
       
-      setFormData(prev => ({
+      setFormData((prev: any) => ({
         ...prev,
         newEducation: {
           institution: '',
@@ -321,7 +321,7 @@ const Profile: React.FC = () => {
         verified: false
       }));
       
-      setFormData(prev => ({
+      setFormData((prev: any) => ({
         ...prev,
         newSkill: {
           name: '',
@@ -344,7 +344,7 @@ const Profile: React.FC = () => {
         ...formData.newCertification
       }));
       
-      setFormData(prev => ({
+      setFormData((prev: any) => ({
         ...prev,
         newCertification: {
           name: '',
@@ -415,7 +415,7 @@ const Profile: React.FC = () => {
       setSuccessMessage('CV téléchargé avec succès !');
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-    } catch (error: Error) {
+    } catch (error: any) {
       console.error('Error downloading CV:', error);
       setSuccessMessage('Erreur lors du téléchargement du CV.');
       setShowSuccess(true);
@@ -430,13 +430,13 @@ const Profile: React.FC = () => {
       try {
         await SupabaseService.deleteFile('cvs', profile.cvFilePath);
         // Met à jour le profil côté backend (Supabase)
-        await SupabaseService.updateUserProfile(user.id, { cvFilePath: null });
+        await SupabaseService.updateUserProfile(user.id, { cvFilePath: undefined });
         // Met à jour le store Redux
-        dispatch(updateProfile({ cvFilePath: null }));
+        dispatch(updateProfile({ cvFilePath: undefined }));
         setSuccessMessage('CV supprimé avec succès !');
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
-      } catch (error: Error) {
+      } catch (error: any) {
         console.error('Error deleting CV:', error);
         setSuccessMessage('Erreur lors de la suppression du CV.');
         setShowSuccess(true);

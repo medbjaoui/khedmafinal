@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { setRecommendations, updateRecommendation } from '../store/slices/profileSlice';
 import { generateProfileRecommendations } from '../services/aiService';
-import { ProfileRecommendation } from '../store/slices/profileSlice';
 
 export const useRecommendations = () => {
   const dispatch = useDispatch();

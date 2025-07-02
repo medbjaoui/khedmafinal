@@ -323,12 +323,12 @@ const Dashboard: React.FC = () => {
             </div>
             
             <div className="space-y-4">
-              {Object.entries(systemAlerts.reduce((acc, alert) => {
+              {Object.entries(systemAlerts.reduce((acc: Record<string, SystemAlert>, alert) => {
                 if (!acc[alert.source] || new Date(alert.created_at) > new Date(acc[alert.source].created_at)) {
                   acc[alert.source] = alert;
                 }
                 return acc;
-              }, {})).map(([source, alert]: [string, any]) => (
+              }, {} as Record<string, SystemAlert>)).map(([source, alert]: [string, SystemAlert]) => (
                 <div key={source} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className={`w-2 h-2 rounded-full ${
