@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, 
   Upload, 
@@ -29,7 +29,13 @@ import {
   FileText,
   Download,
   TrendingUp,
-  CheckCircle
+  CheckCircle,
+  Star,
+  Eye,
+  Zap,
+  Shield,
+  Sparkles,
+  Settings
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { updateProfile, addExperience, addEducation, addSkill, addCertification, removeExperience, removeEducation, removeSkill, removeCertification, fetchProfileStart, fetchProfileSuccess, fetchProfileFailure } from '../store/slices/profileSlice';
@@ -475,92 +481,216 @@ const Profile: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Header */}
+      {/* Header Premium */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+        className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 rounded-2xl overflow-hidden shadow-2xl"
       >
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.3),transparent_50%)]"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-500/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-500/20 to-transparent rounded-full blur-3xl"></div>
+        
+        <div className="relative px-8 py-10">
           <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center relative group">
-                <User className="h-10 w-10 text-white" />
-                <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                   <Camera className="h-6 w-6 text-white" />
-                 </div>
-               </div>
-               <div className="text-white">
-                 <h1 className="text-2xl font-bold">
-                   {profile?.firstName || 'Prénom'} {profile?.lastName || 'Nom'}
-                 </h1>
-                 <p className="text-blue-100 text-lg">{profile?.title || 'Titre professionnel'}</p>
-                 <div className="flex items-center space-x-4 mt-2 text-sm text-blue-100">
-                   <div className="flex items-center space-x-1">
-                     <MapPin className="h-4 w-4" />
-                     <span>{profile?.location || 'Non spécifié'}</span>
-                   </div>
-                   <div className="flex items-center space-x-1">
-                     <Mail className="h-4 w-4" />
-                     <span>{profile?.email || 'Email non renseigné'}</span>
+            <div className="flex items-center space-x-6">
+              {/* Avatar avec effet premium */}
+              <div className="relative">
+                <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-600 rounded-2xl flex items-center justify-center relative group cursor-pointer transform transition-all duration-300 hover:scale-105 shadow-xl">
+                  <User className="h-12 w-12 text-white" />
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Camera className="h-6 w-6 text-white" />
+                  </div>
+                  {/* Status indicator */}
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                </div>
+                {/* Completion ring */}
+                <div className="absolute inset-0 w-24 h-24">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      stroke="rgba(255,255,255,0.2)"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      stroke="url(#gradient)"
+                      strokeWidth="2"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={`${profileCompletion.overall * 2.83} 283`}
+                      className="transition-all duration-500"
+                    />
+                    <defs>
+                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#3B82F6" />
+                        <stop offset="100%" stopColor="#8B5CF6" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+              </div>
+              
+              <div className="text-white">
+                <div className="flex items-center space-x-3 mb-2">
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                    {profile?.firstName || 'Prénom'} {profile?.lastName || 'Nom'}
+                  </h1>
+                  {profileCompletion.overall >= 80 && (
+                    <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-400 to-orange-500 px-2 py-1 rounded-full">
+                      <Star className="h-3 w-3 text-white" />
+                      <span className="text-xs font-semibold text-white">Profil Premium</span>
+                    </div>
+                  )}
+                </div>
+                
+                <p className="text-xl text-blue-100 mb-4 font-medium">
+                  {profile?.title || 'Titre professionnel'}
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center space-x-2 bg-white/10 rounded-lg px-3 py-2 backdrop-blur-sm">
+                    <MapPin className="h-4 w-4 text-blue-300" />
+                    <span className="text-blue-100">{profile?.location || 'Non spécifié'}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-white/10 rounded-lg px-3 py-2 backdrop-blur-sm">
+                    <Mail className="h-4 w-4 text-blue-300" />
+                    <span className="text-blue-100">{profile?.email || 'Email non renseigné'}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-white/10 rounded-lg px-3 py-2 backdrop-blur-sm">
+                    <Eye className="h-4 w-4 text-blue-300" />
+                    <span className="text-blue-100">Profil {profileCompletion.overall >= 80 ? 'Excellent' : 'En cours'}</span>
                   </div>
                 </div>
               </div>
             </div>
-            <button 
-              onClick={() => {
-                setActiveTab('edit');
-                setEditingSection('personal');
-                navigate('/profile?tab=edit');
-              }}
-              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
-            >
-              <Edit3 className="h-4 w-4" />
-              <span>Modifier</span>
-            </button>
+            
+            <div className="flex items-center space-x-3">
+              <button 
+                onClick={() => {
+                  setActiveTab('edit');
+                  setEditingSection('personal');
+                  navigate('/profile?tab=edit');
+                }}
+                className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                <Edit3 className="h-4 w-4" />
+                <span className="font-medium">Modifier</span>
+              </button>
+              
+              <button className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 text-white px-4 py-3 rounded-xl transition-all duration-300 backdrop-blur-sm">
+                <Settings className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Complétude du profil</h3>
-            <span className={`text-2xl font-bold ${
-              profileCompletion.overall >= 80 ? 'text-green-600' :
-              profileCompletion.overall >= 60 ? 'text-yellow-600' :
-              'text-red-600'
-            }`}>
-              {profileCompletion.overall}%
-            </span>
+        {/* Complétude avec design premium */}
+        <div className="relative px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-t border-white/20">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Progression du profil</h3>
+                <p className="text-sm text-gray-600">Votre profil à {profileCompletion.overall}% de complétude</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <div className={`px-4 py-2 rounded-full text-sm font-medium ${
+                profileCompletion.overall >= 80 ? 'bg-green-100 text-green-800' :
+                profileCompletion.overall >= 60 ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {profileCompletion.overall >= 80 ? '🌟 Excellent' :
+                 profileCompletion.overall >= 60 ? '⚡ Bon' : '🚀 À améliorer'}
+              </div>
+              <span className={`text-2xl font-bold ${
+                profileCompletion.overall >= 80 ? 'text-green-600' :
+                profileCompletion.overall >= 60 ? 'text-yellow-600' :
+                'text-red-600'
+              }`}>
+                {profileCompletion.overall}%
+              </span>
+            </div>
           </div>
           
-          <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
-            <div 
-              className={`h-3 rounded-full transition-all duration-500 ${
-                profileCompletion.overall >= 80 ? 'bg-green-600' :
-                profileCompletion.overall >= 60 ? 'bg-yellow-500' :
-                'bg-red-500'
-              }`}
+          {/* Barre de progression premium */}
+          <div className="relative w-full h-4 bg-gray-200 rounded-full mb-6 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-300 to-gray-200 rounded-full"></div>
+            <motion.div 
+              className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full relative overflow-hidden"
               style={{ width: `${profileCompletion.overall}%` }}
-            />
+              initial={{ width: 0 }}
+              animate={{ width: `${profileCompletion.overall}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"></div>
+              <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+            </motion.div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-            {Object.entries(profileCompletion.sections).map(([section, score]) => (
-              <div key={section} className="text-center">
-                <div className={`text-lg font-semibold ${
-                  score >= 80 ? 'text-green-600' :
-                  score >= 60 ? 'text-yellow-600' :
-                  'text-red-600'
-                }`}>
-                  {score}%
+          {/* Sections avec design cards */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {Object.entries(profileCompletion.sections).map(([section, score], index) => (
+              <motion.div
+                key={section}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="relative bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="relative mb-3">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                      <div className={`text-lg font-bold ${
+                        score >= 80 ? 'text-green-600' :
+                        score >= 60 ? 'text-yellow-600' :
+                        'text-red-600'
+                      }`}>
+                        {score}%
+                      </div>
+                    </div>
+                    {score >= 80 && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-gray-900 capitalize mb-1">
+                      {section === 'personal' ? 'Personnel' :
+                       section === 'professional' ? 'Professionnel' :
+                       section === 'experience' ? 'Expérience' :
+                       section === 'education' ? 'Formation' : 'Compétences'}
+                    </div>
+                    <div className={`w-full h-1 rounded-full ${
+                      score >= 80 ? 'bg-green-200' :
+                      score >= 60 ? 'bg-yellow-200' :
+                      'bg-red-200'
+                    }`}>
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          score >= 80 ? 'bg-green-500' :
+                          score >= 60 ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        }`}
+                        style={{ width: `${score}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="text-gray-600 capitalize">
-                  {section === 'personal' ? 'Personnel' :
-                   section === 'professional' ? 'Professionnel' :
-                   section === 'experience' ? 'Expérience' :
-                   section === 'education' ? 'Formation' : 'Compétences'}
-                </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

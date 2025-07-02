@@ -134,73 +134,249 @@ const Overview: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Header */}
+      {/* Welcome Header Premium */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 text-white relative overflow-hidden"
+        className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 rounded-2xl overflow-hidden shadow-2xl"
       >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full -mr-16 -mt-16"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white bg-opacity-10 rounded-full -ml-12 -mb-12"></div>
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.4),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(168,85,247,0.3),transparent_50%)]"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-500/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-500/20 to-transparent rounded-full blur-3xl"></div>
         
-        <div className="relative z-10">
-          <h1 className="text-2xl font-bold mb-2">
-            {getGreeting()} {user?.firstName} ! 👋
-          </h1>
-          <p className="text-blue-100 mb-4">
-            Voici un aperçu de votre progression dans votre recherche d'emploi
-          </p>
-          <div className="flex items-center space-x-6 text-sm">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>Profil actif</span>
+        {/* Floating Elements */}
+        <motion.div
+          animate={{ 
+            y: [0, -10, 0],
+            rotate: [0, 5, 0]
+          }}
+          transition={{ 
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute top-8 right-8 w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl opacity-20"
+        />
+        <motion.div
+          animate={{ 
+            y: [0, 10, 0],
+            rotate: [0, -5, 0]
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute bottom-8 right-24 w-12 h-12 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full opacity-20"
+        />
+        
+        <div className="relative z-10 px-8 py-10">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              {/* Greeting avec emoji animé */}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center space-x-3 mb-3"
+              >
+                <motion.span
+                  animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
+                  transition={{ 
+                    duration: 2.5,
+                    repeat: Infinity,
+                    repeatDelay: 3,
+                    ease: "easeInOut"
+                  }}
+                  className="text-4xl"
+                >
+                  👋
+                </motion.span>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+                  {getGreeting()} {user?.firstName} !
+                </h1>
+              </motion.div>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-xl text-blue-100 mb-6 font-medium"
+              >
+                Tableau de bord de votre recherche d'emploi intelligente
+              </motion.p>
+              
+              {/* Status Cards */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="grid grid-cols-1 md:grid-cols-3 gap-4"
+              >
+                <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
+                  <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                  <div>
+                    <div className="text-sm font-medium text-white">Profil actif</div>
+                    <div className="text-xs text-green-200">En ligne maintenant</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
+                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                    <span className="text-sm font-bold text-white">{thisWeekApplications}</span>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-white">Cette semaine</div>
+                    <div className="text-xs text-yellow-200">Candidatures envoyées</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center">
+                    <span className="text-sm font-bold text-white">{interviewsThisWeek}</span>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-white">Entretiens</div>
+                    <div className="text-xs text-purple-200">À venir cette semaine</div>
+                  </div>
+                </div>
+              </motion.div>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-              <span>{thisWeekApplications} candidatures cette semaine</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-              <span>{interviewsThisWeek} entretien(s) à venir</span>
-            </div>
+            
+            {/* Achievement Badge */}
+            {profileCompletion.overall >= 80 && (
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ 
+                  delay: 0.6,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 20
+                }}
+                className="hidden lg:block"
+              >
+                <div className="relative">
+                  <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 rounded-2xl flex items-center justify-center transform rotate-12 shadow-2xl">
+                    <div className="w-20 h-20 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-xl flex items-center justify-center">
+                      <Star className="h-10 w-10 text-white" />
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 bg-white text-xs font-bold text-gray-800 px-2 py-1 rounded-full shadow-lg">
+                    TOP
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </div>
         </div>
       </motion.div>
 
-      {/* Key Metrics */}
+      {/* Key Metrics Premium */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard
-          title="Candidatures totales"
-          value={applications.length}
-          change={`+${thisWeekApplications} cette semaine`}
-          changeType="positive"
-          icon={Activity}
-          color="blue"
-        />
-        <StatsCard
-          title="Taux de réponse"
-          value={`${applications.length > 0 ? Math.round((applications.filter(app => app.status !== 'sent').length / applications.length) * 100) : 0}%`}
-          change="Derniers 30 jours"
-          changeType="neutral"
-          icon={TrendingUp}
-          color="green"
-        />
-        <StatsCard
-          title="Entretiens programmés"
-          value={interviewsThisWeek}
-          change="Cette semaine"
-          changeType={interviewsThisWeek > 0 ? "positive" : "neutral"}
-          icon={Calendar}
-          color="orange"
-        />
-        <StatsCard
-          title="Score profil"
-          value={`${profileCompletion.overall}%`}
-          change={profileCompletion.overall >= 80 ? "Excellent" : "À améliorer"}
-          changeType={profileCompletion.overall >= 80 ? "positive" : "neutral"}
-          icon={Target}
-          color="purple"
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="relative group"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+          <div className="relative bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                <Activity className="h-6 w-6 text-white" />
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-gray-900">{applications.length}</div>
+                <div className="text-sm text-blue-600 font-medium">+{thisWeekApplications} cette semaine</div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Candidatures</h3>
+              <p className="text-sm text-gray-600">Total des candidatures envoyées</p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="relative group"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+          <div className="relative bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-gray-900">
+                  {applications.length > 0 ? Math.round((applications.filter(app => app.status !== 'sent').length / applications.length) * 100) : 0}%
+                </div>
+                <div className="text-sm text-green-600 font-medium">Derniers 30 jours</div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Taux de réponse</h3>
+              <p className="text-sm text-gray-600">Réponses reçues</p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="relative group"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+          <div className="relative bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center">
+                <Calendar className="h-6 w-6 text-white" />
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-gray-900">{interviewsThisWeek}</div>
+                <div className={`text-sm font-medium ${interviewsThisWeek > 0 ? 'text-orange-600' : 'text-gray-500'}`}>
+                  Cette semaine
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Entretiens</h3>
+              <p className="text-sm text-gray-600">Programmés</p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="relative group"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+          <div className="relative bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center">
+                <Target className="h-6 w-6 text-white" />
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-gray-900">{profileCompletion.overall}%</div>
+                <div className={`text-sm font-medium ${profileCompletion.overall >= 80 ? 'text-purple-600' : 'text-gray-500'}`}>
+                  {profileCompletion.overall >= 80 ? "Excellent" : "À améliorer"}
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Score profil</h3>
+              <p className="text-sm text-gray-600">Complétude</p>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -446,38 +622,105 @@ const Overview: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Tips Section */}
+      {/* Tips Section Premium */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6"
+        className="relative overflow-hidden"
       >
-        <div className="flex items-start space-x-3">
-          <Award className="h-6 w-6 text-green-600 mt-1" />
-          <div>
-            <h3 className="font-semibold text-green-900 mb-2">
-              💡 Conseils personnalisés
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-800">
-              <div>
-                <p className="font-medium mb-1">Optimisez votre visibilité</p>
-                <p>Complétez votre profil à 100% pour augmenter vos chances</p>
-              </div>
-              <div>
-                <p className="font-medium mb-1">Restez actif</p>
-                <p>Postulez régulièrement, visez 5-10 candidatures par semaine</p>
-              </div>
-              <div>
-                <p className="font-medium mb-1">Personnalisez vos candidatures</p>
-                <p>Adaptez chaque lettre de motivation à l'entreprise</p>
-              </div>
-              <div>
-                <p className="font-medium mb-1">Suivez vos candidatures</p>
-                <p>Relancez après 1-2 semaines sans réponse</p>
-              </div>
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 rounded-2xl"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(34,197,94,0.1),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(59,130,246,0.1),transparent_50%)]"></div>
+        
+        <div className="relative border border-emerald-200/50 rounded-2xl p-8 backdrop-blur-sm">
+          <div className="flex items-start space-x-4 mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center transform rotate-12 shadow-lg">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-emerald-700 to-blue-700 bg-clip-text text-transparent mb-2">
+                💡 Conseils IA personnalisés
+              </h3>
+              <p className="text-gray-600">Recommandations basées sur votre profil et vos objectifs</p>
             </div>
           </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 }}
+              className="bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-white/50 hover:shadow-md transition-all duration-300"
+            >
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="h-4 w-4 text-white" />
+                </div>
+                <h4 className="font-semibold text-emerald-900">Optimisez votre visibilité</h4>
+              </div>
+              <p className="text-sm text-emerald-800">Complétez votre profil à 100% pour augmenter vos chances de 3x</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7 }}
+              className="bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-white/50 hover:shadow-md transition-all duration-300"
+            >
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                  <Zap className="h-4 w-4 text-white" />
+                </div>
+                <h4 className="font-semibold text-blue-900">Restez actif</h4>
+              </div>
+              <p className="text-sm text-blue-800">Postulez régulièrement, visez 5-10 candidatures par semaine</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
+              className="bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-white/50 hover:shadow-md transition-all duration-300"
+            >
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Edit3 className="h-4 w-4 text-white" />
+                </div>
+                <h4 className="font-semibold text-purple-900">Personnalisez vos candidatures</h4>
+              </div>
+              <p className="text-sm text-purple-800">Adaptez chaque lettre de motivation à l'entreprise cible</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.9 }}
+              className="bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-white/50 hover:shadow-md transition-all duration-300"
+            >
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+                  <Clock className="h-4 w-4 text-white" />
+                </div>
+                <h4 className="font-semibold text-orange-900">Suivez vos candidatures</h4>
+              </div>
+              <p className="text-sm text-orange-800">Relancez après 1-2 semaines sans réponse pour montrer votre motivation</p>
+            </motion.div>
+          </div>
+          
+          {/* Action button */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1 }}
+            className="flex justify-center mt-6"
+          >
+            <button className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2">
+              <Sparkles className="h-4 w-4" />
+              <span>Obtenir plus de conseils IA</span>
+            </button>
+          </motion.div>
         </div>
       </motion.div>
     </div>
