@@ -4,7 +4,6 @@ import { Badge } from '../../components/ui/badge';
 import { 
   Plus, 
   Search, 
-  Filter, 
   Edit, 
   Trash2, 
   Eye,
@@ -12,8 +11,7 @@ import {
   Building,
   Calendar,
   Clock,
-  Users,
-  MoreVertical
+  Users
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -91,7 +89,7 @@ const AdminJobs: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [loading, setLoading] = useState(false);
+  
 
   useEffect(() => {
     let filtered = jobs;
@@ -251,7 +249,7 @@ const AdminJobs: React.FC = () => {
           </select>
 
           <div className="flex items-center text-sm text-muted-foreground">
-            <Filter className="h-4 w-4 mr-2" />
+            <Search className="h-4 w-4 mr-2" />
             {filteredJobs.length} offres trouvées
           </div>
         </div>

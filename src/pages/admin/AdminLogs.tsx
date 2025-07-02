@@ -3,7 +3,6 @@ import { Card } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { 
   Search, 
-  Filter, 
   Download, 
   RefreshCw,
   AlertTriangle,
@@ -71,7 +70,7 @@ const mockLogs: LogEntry[] = [
 ];
 
 const AdminLogs: React.FC = () => {
-  const [logs, setLogs] = useState<LogEntry[]>(mockLogs);
+  const [logs] = useState<LogEntry[]>(mockLogs);
   const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>(mockLogs);
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState<string>('all');

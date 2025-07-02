@@ -7,13 +7,10 @@ import {
   FileText, 
   Clock,
   Activity,
-  Download,
-  Filter,
-  Calendar
+  Download
 } from 'lucide-react';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { format, subDays } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 const mockData = {
   userGrowth: Array.from({ length: 30 }, (_, i) => ({
