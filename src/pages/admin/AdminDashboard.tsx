@@ -139,30 +139,34 @@ const AdminDashboard: React.FC = () => {
   }, [navigate, dispatch]);
 
   const StatCard = ({ icon, title, value, description, colorClass, trend }: StatCardProps) => (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="flex items-start justify-between">
-        <div className="flex items-start">
-          <div className={`p-3 rounded-full mr-4 ${colorClass}`}>
+    <motion.div 
+      whileHover={{ y: -4, scale: 1.02 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      className="group relative overflow-hidden"
+    >
+      <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+        <div className="flex items-start justify-between mb-4">
+          <div className={`p-4 rounded-2xl ${colorClass} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
             {icon}
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">{title}</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
-            <p className="text-xs text-gray-500 mt-2">{description}</p>
-          </div>
+          {trend && (
+            <div className={`flex items-center px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm ${
+              trend.isPositive ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30'
+            }`}>
+              <TrendingUp 
+                className={`h-3 w-3 mr-1 ${trend.isPositive ? '' : 'rotate-180'}`}
+              />
+              {trend.value}%
+            </div>
+          )}
         </div>
-        {trend && (
-          <div className={`flex items-center text-sm font-medium ${
-            trend.isPositive ? 'text-green-600' : 'text-red-600'
-          }`}>
-            <TrendingUp 
-              className={`h-4 w-4 mr-1 ${trend.isPositive ? '' : 'rotate-180'}`}
-            />
-            {trend.value}%
-          </div>
-        )}
+        <div className="space-y-2">
+          <p className="text-sm font-semibold text-white/70 uppercase tracking-wider">{title}</p>
+          <p className="text-3xl font-bold text-white">{value}</p>
+          <p className="text-sm text-white/60">{description}</p>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   const AlertLevelIndicator = ({ level }: { level: string }) => {
@@ -206,64 +210,102 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="container mx-auto px-6 py-8">
-        {/* Professional Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                Tableau de Bord Administrateur
-              </h1>
-              <p className="text-lg text-gray-600">
-                Vue d'ensemble des performances système et activités utilisateurs
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-white px-4 py-2 rounded-lg shadow-sm border">
-                <span className="text-sm text-gray-500">Dernière mise à jour</span>
-                <p className="font-semibold text-gray-900">
-                  {format(new Date(), 'HH:mm', { locale: fr })}
-                </p>
+        {/* Modern Admin Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-3xl p-8 text-white">
+            {/* Animated Background Elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
+            <div className="absolute top-1/2 right-1/4 w-2 h-2 bg-white/20 rounded-full animate-ping"></div>
+            
+            <div className="relative z-10">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
+                <div className="flex items-center space-x-6 mb-6 lg:mb-0">
+                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+                    <Shield className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-4xl font-bold mb-2">
+                      Dashboard Administrateur
+                    </h1>
+                    <p className="text-xl text-white/90">
+                      Centre de contrôle et monitoring système
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <div className="bg-white/15 backdrop-blur-sm px-6 py-4 rounded-2xl border border-white/20">
+                    <div className="flex items-center space-x-3">
+                      <Activity className="h-5 w-5 text-white" />
+                      <div>
+                        <span className="text-sm font-medium text-white/80">Dernière mise à jour</span>
+                        <p className="text-lg font-bold text-white">
+                          {format(new Date(), 'HH:mm', { locale: fr })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white/15 backdrop-blur-sm px-6 py-4 rounded-2xl border border-white/20">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                      <div>
+                        <span className="text-sm font-medium text-white/80">Statut</span>
+                        <p className="text-lg font-bold text-white">En ligne</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        >
           <StatCard 
-            icon={<Users size={24} className="text-white" />} 
+            icon={<Users size={28} className="text-white" />} 
             title="Utilisateurs Totaux" 
             value={stats?.totalUsers ?? 'N/A'} 
             description="Base d'utilisateurs active"
-            colorClass="bg-gradient-to-r from-blue-500 to-blue-600"
+            colorClass="bg-gradient-to-br from-cyan-500 to-blue-600"
             trend={{ value: 12, isPositive: true }}
           />
           <StatCard 
-            icon={<UserPlus size={24} className="text-white" />} 
+            icon={<UserPlus size={28} className="text-white" />} 
             title="Nouveaux Inscrits" 
             value={stats?.newUsersLast7Days ?? 'N/A'} 
             description="7 derniers jours"
-            colorClass="bg-gradient-to-r from-emerald-500 to-emerald-600"
+            colorClass="bg-gradient-to-br from-emerald-500 to-teal-600"
             trend={{ value: 8, isPositive: true }}
           />
           <StatCard 
-            icon={<Shield size={24} className="text-white" />} 
+            icon={<AlertTriangle size={28} className="text-white" />} 
             title="Alertes Système" 
             value={stats?.unresolvedAlerts ?? 'N/A'} 
             description="Nécessitent une attention"
-            colorClass="bg-gradient-to-r from-amber-500 to-amber-600"
+            colorClass="bg-gradient-to-br from-amber-500 to-orange-600"
             trend={{ value: 3, isPositive: false }}
           />
           <StatCard 
-            icon={<Activity size={24} className="text-white" />} 
+            icon={<Activity size={28} className="text-white" />} 
             title="Système" 
             value="Opérationnel" 
             description="Statut global"
-            colorClass="bg-gradient-to-r from-green-500 to-green-600"
+            colorClass="bg-gradient-to-br from-green-500 to-emerald-600"
           />
-        </div>
+        </motion.div>
 
         {/* Analytics Section */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">

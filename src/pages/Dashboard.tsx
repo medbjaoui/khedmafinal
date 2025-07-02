@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Briefcase, 
   Send, 
@@ -14,7 +15,13 @@ import {
   ChevronRight,
   Search,
   BookOpen,
-  Zap
+  Zap,
+  Calendar,
+  Award,
+  BarChart3,
+  ArrowUpRight,
+  Sparkles,
+  Coffee
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { useNavigate } from 'react-router-dom';
@@ -48,53 +55,55 @@ function timeAgo(dateString: string | Date) {
 // Couleur pour le type d'offre d'emploi
 function getTypeColor(type: string) {
   switch (type) {
-    case 'CDI': return 'bg-green-100 text-green-800 border-green-200';
-    case 'CDD': return 'bg-blue-100 text-blue-800 border-blue-200';
-    case 'Stage': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'Alternance': return 'bg-purple-100 text-purple-800 border-purple-200';
-    case 'Freelance': return 'bg-orange-100 text-orange-800 border-orange-200';
-    default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    case 'CDI': return 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-emerald-100';
+    case 'CDD': return 'bg-blue-50 text-blue-700 border-blue-200 shadow-blue-100';
+    case 'Stage': return 'bg-amber-50 text-amber-700 border-amber-200 shadow-amber-100';
+    case 'Alternance': return 'bg-purple-50 text-purple-700 border-purple-200 shadow-purple-100';
+    case 'Freelance': return 'bg-rose-50 text-rose-700 border-rose-200 shadow-rose-100';
+    default: return 'bg-gray-50 text-gray-700 border-gray-200 shadow-gray-100';
   }
 }
 
-// Component pour les cartes de statistiques
-const StatCard = ({ title, value, change, changeType, icon: Icon, color }: any) => (
+// Component pour les cartes de statistiques améliorées
+const StatCard = ({ title, value, change, changeType, icon: Icon, color, gradient }: any) => (
   <motion.div
-    whileHover={{ y: -2, scale: 1.02 }}
-    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-    className="bg-white p-6 rounded-xl shadow-sm border border-border hover:shadow-md transition-all duration-200"
+    whileHover={{ y: -8, scale: 1.02 }}
+    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+    className="group relative overflow-hidden"
   >
-    <div className="flex items-center justify-between">
-      <div className="flex-1">
-        <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-        <p className="text-3xl font-bold text-foreground">{value}</p>
+    <div className={`absolute inset-0 ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl`}></div>
+    <div className="relative bg-white/80 backdrop-blur-sm p-7 rounded-2xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-4 rounded-2xl ${
+          color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600' :
+          color === 'green' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' :
+          color === 'orange' ? 'bg-gradient-to-br from-orange-500 to-orange-600' :
+          color === 'purple' ? 'bg-gradient-to-br from-purple-500 to-purple-600' : 'bg-gradient-to-br from-gray-500 to-gray-600'
+        } shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
+          <Icon className="h-7 w-7 text-white" />
+        </div>
+        <div className="text-right">
+          <p className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            {value}
+          </p>
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <p className="text-sm font-semibold text-gray-700 uppercase tracking-wider">{title}</p>
         {change && (
-          <div className="flex items-center mt-2">
-            <TrendingUp className={`h-3 w-3 mr-1 ${
-              changeType === 'positive' ? 'text-green-600' : 
-              changeType === 'negative' ? 'text-red-600' : 'text-gray-600'
-            }`} />
-            <p className={`text-sm ${
-              changeType === 'positive' ? 'text-green-600' : 
-              changeType === 'negative' ? 'text-red-600' : 'text-gray-600'
+          <div className="flex items-center space-x-2">
+            <div className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+              changeType === 'positive' ? 'bg-emerald-100 text-emerald-700' : 
+              changeType === 'negative' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
             }`}>
-              {change}
-            </p>
+              <TrendingUp className={`h-3 w-3 mr-1 ${
+                changeType === 'negative' ? 'rotate-180' : ''
+              }`} />
+              <span>{change}</span>
+            </div>
           </div>
         )}
-      </div>
-      <div className={`p-3 rounded-lg ${
-        color === 'blue' ? 'bg-blue-100' :
-        color === 'green' ? 'bg-green-100' :
-        color === 'orange' ? 'bg-orange-100' :
-        color === 'purple' ? 'bg-purple-100' : 'bg-gray-100'
-      }`}>
-        <Icon className={`h-6 w-6 ${
-          color === 'blue' ? 'text-blue-600' :
-          color === 'green' ? 'text-green-600' :
-          color === 'orange' ? 'text-orange-600' :
-          color === 'purple' ? 'text-purple-600' : 'text-gray-600'
-        }`} />
       </div>
     </div>
   </motion.div>
@@ -107,7 +116,13 @@ const Dashboard: React.FC = () => {
   const { jobs } = useAppSelector((state) => state.jobs);
   const { profile, recommendations, profileCompletion } = useAppSelector((state) => state.profile);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -140,11 +155,19 @@ const Dashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement de votre espace...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 mx-auto mb-6"></div>
+            <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-purple-400 animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+          </div>
+          <p className="text-lg font-medium text-gray-700">Chargement de votre espace...</p>
+          <p className="text-sm text-gray-500 mt-2">Préparation de vos données personnalisées</p>
+        </motion.div>
       </div>
     );
   }
@@ -153,93 +176,146 @@ const Dashboard: React.FC = () => {
   const completionPercentage = typeof profileCompletion === 'number' ? profileCompletion : 75;
   const userStats = {
     appliedJobs: applications?.length || 0,
-    savedJobs: 12, // Remplacer par données réelles
+    savedJobs: 12,
     profileCompletion: completionPercentage,
     newOpportunities: 8
   };
 
   // Offres récentes (top 3)
   const recentJobs = jobs?.slice(0, 3) || [];
-
-  // Candidatures récentes
   const recentApplications = applications?.slice(0, 3) || [];
 
+  const getGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return { text: 'Bonjour', emoji: '☀️', color: 'from-amber-400 to-orange-500' };
+    if (hour < 17) return { text: 'Bon après-midi', emoji: '🌤️', color: 'from-blue-400 to-indigo-500' };
+    return { text: 'Bonsoir', emoji: '🌙', color: 'from-indigo-500 to-purple-600' };
+  };
+
+  const greeting = getGreeting();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="space-y-8 p-6">
-        {/* Header avec bienvenue */}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
+      <div className="space-y-8 p-6 max-w-7xl mx-auto">
+        {/* Header Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 rounded-2xl p-8 text-primary-foreground relative overflow-hidden"
+          className="relative overflow-hidden"
         >
-          {/* Éléments décoratifs */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
-          <div className="absolute top-1/2 right-1/4 w-2 h-2 bg-white/20 rounded-full"></div>
-          <div className="absolute top-1/4 right-1/3 w-1 h-1 bg-white/30 rounded-full"></div>
-          
-          <div className="relative z-10">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                    <User className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold">
-                      Bonjour, {profile?.firstName || user?.firstName || 'Utilisateur'} ! 👋
-                    </h1>
-                    <p className="text-primary-foreground/80 text-lg">
-                      Prêt à découvrir de nouvelles opportunités ?
-                    </p>
-                  </div>
+          <div className={`bg-gradient-to-r ${greeting.color} rounded-3xl p-8 text-white relative`}>
+            {/* Animated Background Elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24 animate-bounce" style={{ animationDuration: '3s' }}></div>
+            <div className="absolute top-1/2 right-1/4 w-4 h-4 bg-white/30 rounded-full animate-ping"></div>
+            <div className="absolute top-1/4 right-1/3 w-2 h-2 bg-white/40 rounded-full animate-pulse"></div>
+            
+            <div className="relative z-10">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
+                <div className="flex-1 mb-6 lg:mb-0">
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex items-center space-x-4 mb-4"
+                  >
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+                      <span className="text-2xl">{greeting.emoji}</span>
+                    </div>
+                    <div>
+                      <h1 className="text-3xl lg:text-4xl font-bold">
+                        {greeting.text}, {profile?.firstName || user?.firstName || 'Utilisateur'} !
+                      </h1>
+                      <p className="text-lg text-white/90 mt-1">
+                        {currentTime.toLocaleDateString('fr-FR', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </p>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.p 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="text-xl text-white/90 mb-6 max-w-2xl"
+                  >
+                    Découvrez de nouvelles opportunités et propulsez votre carrière vers de nouveaux horizons ✨
+                  </motion.p>
+                  
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="flex flex-wrap gap-4"
+                  >
+                    <Button 
+                      size="lg"
+                      onClick={() => navigate('/jobs')}
+                      className="bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group"
+                    >
+                      <Search className="h-5 w-5 mr-2 group-hover:rotate-12 transition-transform" />
+                      Explorer les emplois
+                      <ArrowUpRight className="h-4 w-4 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </Button>
+                    <Button 
+                      size="lg"
+                      variant="outline"
+                      onClick={() => navigate('/profile')}
+                      className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group"
+                    >
+                      <User className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
+                      Mon profil
+                    </Button>
+                  </motion.div>
                 </div>
                 
-                <div className="flex flex-wrap gap-3 mt-6">
-                  <Button 
-                    variant="secondary"
-                    onClick={() => navigate('/jobs')}
-                    className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                  >
-                    <Search className="h-4 w-4 mr-2" />
-                    Rechercher un emploi
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => navigate('/profile')}
-                    className="border-white/30 text-white hover:bg-white/10"
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Mon profil
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Indicateur de complétion du profil */}
-              <div className="hidden md:block">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 min-w-[200px]">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Profil complété</span>
-                    <span className="text-lg font-bold">{userStats.profileCompletion}%</span>
+                {/* Profile Completion Widget */}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.8 }}
+                  className="lg:ml-8"
+                >
+                  <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-6 min-w-[280px] border border-white/20 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <Target className="h-5 w-5 text-white" />
+                        <span className="text-sm font-semibold text-white">Profil complété</span>
+                      </div>
+                      <span className="text-2xl font-bold text-white">{userStats.profileCompletion}%</span>
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-3 mb-3 overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${userStats.profileCompletion}%` }}
+                        transition={{ duration: 1, delay: 1 }}
+                        className="bg-white rounded-full h-3 shadow-sm"
+                      ></motion.div>
+                    </div>
+                    <p className="text-xs text-white/80">
+                      {userStats.profileCompletion < 100 ? 
+                        'Complétez pour maximiser vos opportunités' : 
+                        'Profil excellent ! Continuez sur cette lancée 🎉'
+                      }
+                    </p>
                   </div>
-                  <div className="w-full bg-white/20 rounded-full h-2">
-                    <div 
-                      className="bg-white rounded-full h-2 transition-all duration-500"
-                      style={{ width: `${userStats.profileCompletion}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-primary-foreground/70 mt-2">
-                    {userStats.profileCompletion < 100 ? 'Complétez pour plus de visibilité' : 'Excellent profil !'}
-                  </p>
-                </div>
+                </motion.div>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Cartes de statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Statistics Cards */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
           <StatCard
             title="Candidatures envoyées"
             value={userStats.appliedJobs}
@@ -247,6 +323,7 @@ const Dashboard: React.FC = () => {
             changeType="positive"
             icon={Send}
             color="blue"
+            gradient="bg-gradient-to-br from-blue-500/10 to-blue-600/10"
           />
           <StatCard
             title="Offres sauvegardées"
@@ -255,6 +332,7 @@ const Dashboard: React.FC = () => {
             changeType="positive"
             icon={Star}
             color="orange"
+            gradient="bg-gradient-to-br from-orange-500/10 to-orange-600/10"
           />
           <StatCard
             title="Profil complété"
@@ -263,6 +341,7 @@ const Dashboard: React.FC = () => {
             changeType={userStats.profileCompletion < 100 ? "neutral" : "positive"}
             icon={Target}
             color="green"
+            gradient="bg-gradient-to-br from-emerald-500/10 to-emerald-600/10"
           />
           <StatCard
             title="Nouvelles opportunités"
@@ -271,187 +350,225 @@ const Dashboard: React.FC = () => {
             changeType="positive"
             icon={Zap}
             color="purple"
+            gradient="bg-gradient-to-br from-purple-500/10 to-purple-600/10"
           />
-        </div>
+        </motion.div>
 
-        {/* Contenu principal */}
+        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Offres recommandées */}
+          {/* Job Recommendations */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.3 }}
             className="lg:col-span-2"
           >
-            <Card className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Briefcase className="h-5 w-5 text-primary" />
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+              <div className="flex justify-between items-center mb-8">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg">
+                    <Briefcase className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold text-foreground">Offres recommandées</h2>
-                    <p className="text-sm text-muted-foreground">Basées sur votre profil</p>
+                    <h2 className="text-2xl font-bold text-gray-900">Offres recommandées</h2>
+                    <p className="text-gray-600 mt-1">Sélectionnées spécialement pour vous</p>
                   </div>
                 </div>
-                <Button variant="outline" onClick={() => navigate('/jobs')}>
-                  <Eye className="h-4 w-4 mr-2" />
+                <Button 
+                  onClick={() => navigate('/jobs')}
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group"
+                >
+                  <Eye className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
                   Voir tout
+                  <ArrowUpRight className="h-4 w-4 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </Button>
               </div>
               
               <div className="space-y-4">
-                {recentJobs.map((job: any, index) => (
-                  <motion.div
-                    key={job.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 * index }}
-                    className="p-4 border border-border rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer group"
-                    onClick={() => navigate(`/jobs`)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                            {job.title}
-                          </h3>
-                          <Badge className={getTypeColor(job.type)}>
-                            {job.type}
-                          </Badge>
+                <AnimatePresence>
+                  {recentJobs.map((job: any, index) => (
+                    <motion.div
+                      key={job.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ delay: 0.1 * index }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      className="group p-6 bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl hover:shadow-xl transition-all duration-300 cursor-pointer"
+                      onClick={() => navigate(`/jobs`)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <h3 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors">
+                              {job.title}
+                            </h3>
+                            <Badge className={`${getTypeColor(job.type)} font-medium`}>
+                              {job.type}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600 space-x-6 mb-3">
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-1 text-gray-400" />
+                              <span className="font-medium">{job.company}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-1 text-gray-400" />
+                              {job.location}
+                            </div>
+                            <div className="flex items-center">
+                              <Clock className="h-4 w-4 mr-1 text-gray-400" />
+                              {timeAgo(job.posted_date || job.created_at)}
+                            </div>
+                          </div>
+                          <p className="text-gray-700 line-clamp-2 leading-relaxed">
+                            {job.description}
+                          </p>
                         </div>
-                        <div className="flex items-center text-sm text-muted-foreground space-x-4 mb-2">
-                          <div className="flex items-center">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {job.company}
-                          </div>
-                          <div className="flex items-center">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {job.location}
-                          </div>
-                          <div className="flex items-center">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {timeAgo(job.posted_date || job.created_at)}
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {job.description}
-                        </p>
+                        <ChevronRight className="h-6 w-6 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all duration-300" />
                       </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
               
               {recentJobs.length === 0 && (
-                <div className="text-center py-8">
-                  <Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">Aucune offre disponible pour le moment</p>
-                  <Button className="mt-4" onClick={() => navigate('/jobs')}>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-12"
+                >
+                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center">
+                    <Briefcase className="h-12 w-12 text-gray-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucune offre disponible</h3>
+                  <p className="text-gray-600 mb-6">Nous recherchons les meilleures opportunités pour vous</p>
+                  <Button 
+                    onClick={() => navigate('/jobs')}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                  >
+                    <Search className="h-4 w-4 mr-2" />
                     Parcourir les offres
                   </Button>
-                </div>
+                </motion.div>
               )}
-            </Card>
+            </div>
           </motion.div>
 
-          {/* Sidebar avec activités récentes */}
+          {/* Sidebar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.4 }}
             className="space-y-6"
           >
-            {/* Candidatures récentes */}
-            <Card className="p-6">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Activity className="h-5 w-5 text-green-600" />
+            {/* Recent Activity */}
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg">
+                  <Activity className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Activité récente</h3>
-                  <p className="text-sm text-muted-foreground">Vos dernières actions</p>
+                  <h3 className="font-bold text-lg text-gray-900">Activité récente</h3>
+                  <p className="text-gray-600 text-sm">Vos dernières actions</p>
                 </div>
               </div>
               
               <div className="space-y-3">
-                {recentApplications.map((app: any) => (
-                  <div key={app.id} className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                      <Send className="h-4 w-4 text-primary" />
+                {recentApplications.map((app: any, index) => (
+                  <motion.div 
+                    key={app.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 * index }}
+                    className="flex items-center space-x-3 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100"
+                  >
+                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+                      <Send className="h-4 w-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-foreground truncate">
+                      <p className="font-semibold text-sm text-gray-900">
                         Candidature envoyée
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-gray-600">
                         {timeAgo(app.applied_date || app.created_at)}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
                 
                 {recentApplications.length === 0 && (
-                  <div className="text-center py-4 text-muted-foreground">
-                    <p className="text-sm">Aucune activité récente</p>
+                  <div className="text-center py-8">
+                    <Coffee className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                    <p className="text-sm text-gray-600">Aucune activité récente</p>
                   </div>
                 )}
               </div>
               
               <Button 
                 variant="outline" 
-                className="w-full mt-4"
+                className="w-full mt-6 border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-all duration-300"
                 onClick={() => navigate('/applications')}
               >
                 Voir toutes mes candidatures
               </Button>
-            </Card>
+            </div>
 
-            {/* Recommandations */}
-            <Card className="p-6">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <BookOpen className="h-5 w-5 text-blue-600" />
+            {/* Tips & Recommendations */}
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+                  <Sparkles className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Conseils</h3>
-                  <p className="text-sm text-muted-foreground">Pour améliorer votre profil</p>
+                  <h3 className="font-bold text-lg text-gray-900">Conseils personnalisés</h3>
+                  <p className="text-gray-600 text-sm">Pour booster votre profil</p>
                 </div>
               </div>
               
               <div className="space-y-3">
-                {recommendations?.slice(0, 3).map((rec: any) => (
-                  <div key={rec.id} className="p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                {recommendations?.slice(0, 3).map((rec: any, index) => (
+                  <motion.div 
+                    key={rec.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1 * index }}
+                    className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100"
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="w-3 h-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mt-2 shadow-sm"></div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">{rec.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{rec.description}</p>
+                        <p className="text-sm font-semibold text-gray-900">{rec.title}</p>
+                        <p className="text-xs text-gray-600 mt-1 leading-relaxed">{rec.description}</p>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )) || (
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100"
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="w-3 h-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mt-2"></div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">Complétez votre profil</p>
-                        <p className="text-xs text-muted-foreground mt-1">Ajoutez vos compétences et expériences</p>
+                        <p className="text-sm font-semibold text-gray-900">Optimisez votre profil</p>
+                        <p className="text-xs text-gray-600 mt-1">Ajoutez vos compétences et expériences pour attirer les recruteurs</p>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
               </div>
               
               <Button 
                 variant="outline" 
-                className="w-full mt-4"
+                className="w-full mt-6 border-blue-200 text-blue-700 hover:bg-blue-50 transition-all duration-300 group"
                 onClick={() => navigate('/profile')}
               >
+                <User className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
                 Améliorer mon profil
               </Button>
-            </Card>
+            </div>
           </motion.div>
         </div>
       </div>
