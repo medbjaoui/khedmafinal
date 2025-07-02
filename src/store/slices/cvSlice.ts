@@ -44,6 +44,8 @@ const cvSlice = createSlice({
     },
     clearCV: (state) => {
       state.current = null;
+      state.error = null;
+      state.loading = false;
     },
     setCurrentCV: (state, action: PayloadAction<CVAnalysis | null>) => {
       state.current = action.payload;
