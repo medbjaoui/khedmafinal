@@ -2,8 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Upload, FileText, AlertCircle, CheckCircle, X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { startCVExtraction, updateExtractionProgress, cvExtractionSuccess, cvExtractionFailure, updateProfile, setProfile } from '../../store/slices/profileSlice';
-import { cvAnalysisService } from '../../services/cvAnalysisService';
+import { startCVExtraction, updateExtractionProgress, cvExtractionSuccess, cvExtractionFailure, setProfile } from '../../store/slices/profileSlice';
 import { CVService } from '../../services/cvService';
 import { SupabaseService } from '../../services/supabaseService';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +13,7 @@ const CVUploadZone: React.FC = () => {
   const { user } = useAppSelector(state => state.auth);
   const { extractionLoading, extractionProgress, extractionError } = useAppSelector(state => state.profile);
   const [dragOver, setDragOver] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [analysisResults, setAnalysisResults] = useState<{
@@ -31,7 +30,6 @@ const CVUploadZone: React.FC = () => {
     const file = files[0];
     
     if (file && isValidFile(file)) {
-      setSelectedFile(file);
       processFile(file);
     }
   }, []);
@@ -39,7 +37,6 @@ const CVUploadZone: React.FC = () => {
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && isValidFile(file)) {
-      setSelectedFile(file);
       processFile(file);
     }
   }, []);
@@ -163,7 +160,6 @@ const CVUploadZone: React.FC = () => {
   };
 
   const resetUpload = () => {
-    setSelectedFile(null);
     dispatch(cvExtractionFailure(''));
   };
 

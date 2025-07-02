@@ -12,8 +12,7 @@ import {
   Trash2,
   Lock,
   Unlock,
-  Check,
-  Plus
+  Check
 } from 'lucide-react';
 
 interface Permission {
@@ -115,7 +114,7 @@ const PermissionsManagementModal: React.FC<PermissionsManagementModalProps> = ({
     });
   };
 
-  const handleResourceToggle = (resource: string, resourcePermissions: Permission[]) => {
+  const handleResourceToggle = (_resource: string, resourcePermissions: Permission[]) => {
     setFormData(prev => {
       const resourcePermissionIds = resourcePermissions.map(p => p.id);
       const allSelected = resourcePermissionIds.every(id => prev.permissions.includes(id));
