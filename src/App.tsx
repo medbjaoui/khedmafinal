@@ -17,24 +17,23 @@ import Header from './components/Layout/Header';
 import Sidebar from './components/Layout/Sidebar';
 
 // Page Components
-import Dashboard from './pages/Dashboard';
-import CVAnalysis from './pages/CVAnalysis';
-import Jobs from './pages/Jobs';
-
-import Applications from './pages/Applications';
-import Analytics from './pages/Analytics';
-import Tasks from './pages/Tasks';
-import Reports from './pages/Reports';
-import SavedJobs from './pages/SavedJobs';
-import Settings from './pages/Settings';
-import AdminUsers from './pages/admin/AdminUsers';
-import AdminSystem from './pages/admin/AdminSystem';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminAnalytics from './pages/admin/AdminAnalytics';
-import AdminLogs from './pages/admin/AdminLogs';
-import AdminJobs from './pages/admin/AdminJobs';
-import AdminSettings from './pages/admin/AdminSettings';
-import Profile from './pages/Profile';
+import {
+  Dashboard,
+  Profile,
+  Jobs,
+  Applications,
+  CVAnalysis,
+  Analytics,
+  SavedJobs,
+  Settings,
+  AdminDashboard,
+  AdminUsers,
+  AdminJobs,
+  AdminAnalytics,
+  AdminSystem,
+  AdminSettings,
+  AdminLogs
+} from './components/LazyComponents';
 
 // Loading Component
 import { Loader2, ArrowLeft } from 'lucide-react';
@@ -48,7 +47,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     // Try to restore session on app start
     dispatch(restoreUserSession());
-    
+
     // Set a timeout to stop showing loading after session restore attempt
     const timer = setTimeout(() => {
       setInitializing(false);
@@ -108,13 +107,13 @@ const AppContent: React.FC = () => {
       <Header 
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
       />
-      
+
       <div className="flex flex-1 overflow-hidden">
         <Sidebar 
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
-        
+
         {/* Main content with left margin for sidebar on desktop */}
         <main className="flex-1 overflow-y-auto p-6 lg:pl-72">
           <div className="max-w-7xl mx-auto">
@@ -135,7 +134,7 @@ const AppContent: React.FC = () => {
                   <UpdatePasswordForm />
                 </ProtectedRoute>
               } />
-              
+
               {/* User-specific routes */}
               {!isAdmin && (
                 <>
@@ -181,7 +180,7 @@ const AppContent: React.FC = () => {
                   } />
                 </>
               )}
-              
+
               {/* Admin-specific routes */}
               {isAdmin && (
                 <>
@@ -238,7 +237,7 @@ const AppContent: React.FC = () => {
                   } />
                 </>
               )}
-              
+
               {/* Fallback route */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

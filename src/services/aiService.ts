@@ -364,21 +364,106 @@ N'hésitez pas si vous avez des questions plus spécifiques !`;
   }
 
   // Utility methods
-  async generateCoverLetter(jobTitle: string, company: string, userProfile: any): Promise<AIResponse> {
-    const prompt = `Génère une lettre de motivation professionnelle en français pour le poste de "${jobTitle}" chez "${company}". 
-    
-Profil du candidat :
-- Nom : ${userProfile.firstName} ${userProfile.lastName}
-- Titre : ${userProfile.title}
-- Expérience : ${userProfile.experiences?.length || 0} expériences
-- Compétences principales : ${userProfile.skills?.slice(0, 5).map((s: any) => s.name).join(', ') || 'Non spécifiées'}
+  async generateCoverLetter(jobTitle: string, company: string, userProfile: any, jobDescription?: string): Promise<AIResponse> {
+    const experiences = userProfile.experiences || [];
+    const skills = userProfile.skills || [];
+    const relevantExperience = experiences.slice(0, 3);
+    const topSkills = skills.slice(0, 8);
 
-La lettre doit être :
-- Personnalisée pour l'entreprise et le poste
-- Professionnelle mais authentique
-- Entre 200-300 mots
-- Structurée avec introduction, développement, conclusion
-- Adaptée au marché tunisien`;
+    const prompt = `Génère une lettre de motivation professionnelle et personnalisée en français pour le poste de "${jobTitle}" chez "${company}".
+
+PROFIL DU CANDIDAT :
+- Nom : ${userProfile.firstName} ${userProfile.lastName}
+- Titre professionnel : ${userProfile.title || 'Professionnel'}
+- Localisation : ${userProfile.location || 'Tunisie'}
+- Résumé : ${userProfile.summary || 'Professionnel expérimenté'}
+
+EXPÉRIENCES PERTINENTES :
+${relevantExperience.map((exp: any, index: number) => 
+  `${index + 1}. ${exp.position} chez ${exp.company} (${exp.startDate} - ${exp.endDate || 'Présent'})
+   Réalisations : ${exp.description || 'Expérience professionnelle enrichissante'}`
+).join('\n')}
+
+COMPÉTENCES CLÉS :
+${topSkills.map((skill: any) => `- ${skill.name} (${skill.level || 'Expérimenté'})`).join('\n')}
+
+${jobDescription ? `DESCRIPTION DU POSTE :\n${jobDescription}\n` : ''}
+
+INSTRUCTIONS SPÉCIFIQUES :
+1. Analyser les mots-clés du poste et les intégrer naturellement
+2. Mettre en avant 2-3 expériences les plus pertinentes avec des résultats concrets
+3. Démontrer la connaissance de l'entreprise et du secteur
+4. Utiliser un ton professionnel mais authentique
+5. Adapter au contexte du marché de l'emploi tunisien
+6. Structurer : Introduction accrocheuse, développement argumenté, conclusion motivante
+7. Longueur optimale : 250-350 mots
+
+Format attendu :
+Madame, Monsieur,
+
+[Introduction personnalisée]
+
+[Développement avec expériences et compétences pertinentes]
+
+[Conclusion avec appel à l'action]
+
+Cordialement,
+${userProfile.firstName} ${userProfile.lastName}`;
+
+    return await this.generateText(prompt);
+  }
+
+  async generateAdvancedTemplate(templateType: string, industry: string, tone: string, context: any): Promise<AIResponse> {
+    const prompt = `Créé un template d'email professionnel ${templateType} optimisé pour le secteur ${industry} avec un ton ${tone}.
+
+CONTEXTE :
+${JSON.stringify(context, null, 2)}
+
+EXIGENCES :
+1. Template réutilisable avec variables {variableName}
+2. Optimisé pour le taux d'ouverture et de réponse
+3. Respectant les bonnes pratiques du secteur ${industry}
+4. Ton ${tone} mais professionnel
+5. Adapté au marché tunisien
+6. Structure claire et engageante
+7. Call-to-action efficace
+
+Variables disponibles : {candidateName}, {jobTitle}, {company}, {companyUrl}, {skills}, {experience}
+
+Fournis le template avec :
+- Objet d'email accrocheur
+- Corps du message structuré
+- Suggestions de personnalisation
+- Conseils d'optimisation`;
+
+    return await this.generateText(prompt);
+  }
+
+  async optimizeEmailTemplate(originalTemplate: string, performanceData: any): Promise<AIResponse> {
+    const prompt = `Optimise ce template d'email basé sur les données de performance :
+
+TEMPLATE ACTUEL :
+${originalTemplate}
+
+DONNÉES DE PERFORMANCE :
+- Taux d'ouverture : ${performanceData.openRate || 'N/A'}%
+- Taux de réponse : ${performanceData.responseRate || 'N/A'}%
+- Taux de clics : ${performanceData.clickRate || 'N/A'}%
+- Nombre d'envois : ${performanceData.sentCount || 0}
+
+OPTIMISATIONS À APPLIQUER :
+1. Améliorer l'objet pour augmenter le taux d'ouverture
+2. Optimiser l'accroche des 3 premières lignes
+3. Renforcer la proposition de valeur
+4. Améliorer le call-to-action
+5. Réduire la friction
+6. Personnalisation plus poussée
+
+Fournis :
+- Template optimisé
+- Explication des changements
+- Score d'amélioration estimé
+- Suggestions A/B testing`;
 
     return await this.generateText(prompt);
   }

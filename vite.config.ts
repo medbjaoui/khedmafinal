@@ -40,7 +40,6 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 8080,
-    allowedHosts:
-      "c57a7331-c3f1-4f07-af59-86c676432686-00-2ju76y057dsg5.kirk.replit.dev",
+    allowedHosts: "all",
   },
 }));

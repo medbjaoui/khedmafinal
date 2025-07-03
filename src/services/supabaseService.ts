@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { UserProfile, Experience, Education, Skill, Language, Certification } from '../store/slices/profileSlice';
 import { Job } from '../store/slices/jobsSlice';
 import { Application } from '../store/slices/applicationsSlice';
+import { CacheService } from './cacheService';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -92,6 +93,12 @@ export class SupabaseService {
   }
 
   static async getUserProfile(userId: string): Promise<UserProfile | null> {
+    // Vérifier le cache d'abord
+    const cached = CacheService.getUserProfile(userId);
+    if (cached) {
+      return cached;
+    }
+
     try {
       const { data, error } = await supabase
         .from('user_profiles')
@@ -178,7 +185,7 @@ export class SupabaseService {
         this.getUserCertifications(userId)
       ]);
 
-      return {
+      const profile = {
         firstName: data.first_name,
         lastName: data.last_name,
         email: data.email || '',
@@ -201,6 +208,11 @@ export class SupabaseService {
         lastUpdated: data.updated_at,
         completionScore: data.completion_score || 0
       };
+
+      // Mettre en cache le profil
+      CacheService.cacheUserProfile(userId, profile);
+      
+      return profile;
     } catch (error) {
       return null;
     }
@@ -382,7 +394,7 @@ export class SupabaseService {
 
   static subscribeToNotifications(userId: string, callback: (notification: any) => void) {
     const subscription = supabase
-      .channel('notifications')
+      .channel(`notifications:${userId}`)
       .on(
         'postgres_changes',
         {
@@ -391,11 +403,71 @@ export class SupabaseService {
           table: 'notifications',
           filter: `user_id=eq.${userId}`
         },
-        (payload) => callback(payload.new)
+        (payload) => {
+          // Formatter la notification pour le frontend
+          const notification = {
+            id: payload.new.id,
+            type: payload.new.type,
+            title: payload.new.title,
+            message: payload.new.message,
+            timestamp: payload.new.created_at,
+            read: payload.new.read,
+            priority: payload.new.priority,
+            actionUrl: payload.new.action_url
+          };
+          callback(notification);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'applications',
+          filter: `user_id=eq.${userId}`
+        },
+        (payload) => {
+          // Notification automatique pour changement de statut
+          if (payload.old.status !== payload.new.status) {
+            const statusNotification = {
+              id: `status_${payload.new.id}_${Date.now()}`,
+              type: 'application',
+              title: 'Mise à jour de candidature',
+              message: `Le statut de votre candidature a changé : ${payload.new.status}`,
+              timestamp: new Date().toISOString(),
+              read: false,
+              priority: payload.new.status === 'accepté' ? 'high' : 'medium',
+              actionUrl: `/applications/${payload.new.id}`
+            };
+            callback(statusNotification);
+          }
+        }
       )
       .subscribe();
 
     return subscription;
+  }
+
+  static async triggerApplicationNotification(userId: string, applicationData: any) {
+    return await this.createNotification(userId, {
+      type: 'application',
+      title: 'Candidature mise à jour',
+      message: `Votre candidature chez ${applicationData.company} a été mise à jour`,
+      priority: 'medium',
+      actionUrl: `/applications/${applicationData.id}`,
+      metadata: { applicationId: applicationData.id }
+    });
+  }
+
+  static async triggerJobMatchNotification(userId: string, jobData: any, matchScore: number) {
+    return await this.createNotification(userId, {
+      type: 'job',
+      title: 'Nouvelle opportunité correspondante',
+      message: `Le poste "${jobData.title}" chez ${jobData.company} correspond à votre profil (${matchScore}% de compatibilité)`,
+      priority: matchScore > 70 ? 'high' : 'medium',
+      actionUrl: `/jobs/${jobData.id}`,
+      metadata: { jobId: jobData.id, matchScore }
+    });
   }
 
   // CV Version methods
