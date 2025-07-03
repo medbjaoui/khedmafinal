@@ -5,37 +5,49 @@ Ce document liste toutes les fonctionnalités manquantes et les tables qui ne so
 
 ---
 
-## 🗄️ Tables Manquantes dans la Base de Données
+## Tables Manquantes dans la Base de Données
 
 ### Tables Principales
-- [ ] `jobs` - Table des offres d'emploi
-- [ ] `user_profiles` - Profils utilisateurs
-- [ ] `saved_jobs` - Emplois sauvegardés
-- [ ] `recommendations` - Recommandations personnalisées
-- [ ] `notifications` - Système de notifications
-- [ ] `cv_versions` - Versions de CV
-- [ ] `applications` - Candidatures utilisateurs
+- [x] `jobs` - Table des offres d'emploi
+- [x] `user_profiles` - Profils utilisateurs
+- [x] `saved_jobs` - Emplois sauvegardés
+- [x] `recommendations` - Recommandations personnalisées
+- [x] `notifications` - Système de notifications
+- [x] `cv_versions` - Versions de CV
+- [x] `applications` - Candidatures utilisateurs
 
 ### Tables de Profil Utilisateur
-- [ ] `experiences` - Expériences professionnelles
-- [ ] `education` - Formation et éducation
-- [ ] `skills` - Compétences utilisateur
-- [ ] `languages` - Langues maîtrisées
-- [ ] `certifications` - Certifications et diplômes
+- [x] `experiences` - Expériences professionnelles
+- [x] `education` - Formation et éducation
+- [x] `skills` - Compétences utilisateur
+- [x] `languages` - Langues maîtrisées
+- [x] `certifications` - Certifications et diplômes
 
 ### Tables Admin
-- [ ] `system_alerts` - Alertes système
-- [ ] `ai_settings` - Paramètres IA
-- [ ] `ai_usage` - Suivi d'utilisation IA
+- [x] `system_alerts` - Alertes système
+- [x] `ai_settings` - Paramètres IA
+- [x] `ai_usage` - Suivi d'utilisation IA
 
 ---
 
-## 🔧 Fonctionnalités Manquantes
+## Fonctionnalités Manquantes
 
 ### 1. Authentification et Gestion des Utilisateurs
-- [ ] **Système de rôles avancé**
-  - [ ] Rôles personnalisés (recruteur, candidat, admin)
-  - [ ] Permissions granulaires
+- [x] Connexion/Inscription par email/mot de passe (présence de composants Auth, hooks, services et slice Redux)
+- [x] Gestion de profil utilisateur (édition de profil, overview, slice Redux, page dédiée)
+- [x] Administration des utilisateurs (pages et composants admin, gestion de la liste des utilisateurs)
+- [x] Gestion des rôles côté backend (fonctions SQL pour changer le rôle dans les métadonnées)
+- [x] Policies RLS sur les tables sensibles
+
+- [x] **Interface d’administration pour attribuer/changer les rôles** (UI implémentée avec contournement pour la fonction backend défectueuse)
+- [ ] **Création de rôles personnalisés** (actuellement, seuls “Admin” et “User” sont utilisés ; pas de gestion dynamique des rôles)
+- [ ] **Permissions granulaires côté application** (pas de gestion fine côté front/back pour chaque permission)
+- [ ] **Validation d’email à l’inscription** (à vérifier côté front, pas d’UI claire)
+- [ ] **Téléversement de photo de profil** (pas de champ ni d’UI dédié repéré)
+- [ ] **Suppression de compte utilisateur** (pas de fonction ou bouton utilisateur pour supprimer son compte)
+- [ ] **Gestion du rafraîchissement/expiration des tokens** (à vérifier côté front/back)
+- [ ] **Journalisation des connexions et tentatives échouées** (pas de log d’authentification utilisateur explicite)
+- [ ] **Possibilité de bannir ou désactiver un utilisateur** (pas de champ ou de logique “is_active”/“banned” sur auth.users ou user_profiles)
   - [ ] Gestion des permissions par fonctionnalité
 
 - [ ] **Gestion des sessions**
@@ -278,7 +290,7 @@ Ce document liste toutes les fonctionnalités manquantes et les tables qui ne so
 1. **Immédiat** (Cette semaine)
    - [ ] Créer les tables manquantes
    - [ ] Implémenter l'authentification de base
-   - [ ] Corriger les erreurs existantes
+   - [x] Corriger les erreurs existantes (Erreurs de hooks React et de mise à jour de rôle résolues)
 
 2. **Court terme** (2-4 semaines)
    - [ ] Développer les fonctionnalités core
@@ -303,8 +315,9 @@ Ce document liste toutes les fonctionnalités manquantes et les tables qui ne so
 - **Approche** : Développement itératif avec tests continus
 - **Objectif** : Application fonctionnelle et stable
 - **Deadline** : Version MVP dans 4 semaines
+- **Note Technique** : La fonction Supabase `update_user_role` est défectueuse (erreur de colonne `metadata` dans `system_logs`). Un contournement a été implémenté côté client en modifiant `AdminService.updateUser` pour gérer directement la mise à jour du rôle. La fonction backend devra être corrigée.
 
 ---
 
-*Dernière mise à jour : $(date)*
+*Dernière mise à jour : 2025-07-03*
 *Version : 1.0* 

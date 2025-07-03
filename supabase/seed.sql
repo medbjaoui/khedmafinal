@@ -14,4 +14,36 @@ ON CONFLICT (id) DO NOTHING;
 -- Insérer les identités
 INSERT INTO "auth"."identities" ("provider_id", "user_id", "identity_data", "provider", "last_sign_in_at", "created_at", "updated_at", "id") VALUES
 	('8e5852de-6e0e-45a9-8ff4-28d3f7c26b9d', '8e5852de-6e0e-45a9-8ff4-28d3f7c26b9d', '{"sub": "8e5852de-6e0e-45a9-8ff4-28d3f7c26b9d", "role": "User", "email": "bjaoui24@gmail.com", "last_name": "bjaoui", "first_name": "med", "email_verified": true, "phone_verified": false}', 'email', '2025-07-01 06:11:47.350221+00', '2025-07-01 06:11:47.350284+00', '2025-07-01 06:11:47.350284+00', '80451bc7-8246-4739-bed4-73673ef91dea')
-ON CONFLICT (id) DO NOTHING; 
+ON CONFLICT (id) DO NOTHING;
+
+-- Insérer les profils utilisateurs correspondants
+INSERT INTO public.user_profiles (id, first_name, last_name)
+VALUES
+    ('00000000-0000-0000-0000-000000000001', 'Test', 'User'),
+    ('00000000-0000-0000-0000-000000000002', 'Ahmed', 'Ben Ali'),
+    ('00000000-0000-0000-0000-000000000003', 'Fatma', 'Trabelsi'),
+    ('00000000-0000-0000-0000-000000000004', 'Mohamed', 'Gharbi'),
+    ('00000000-0000-0000-0000-000000000005', 'Leila', 'Mansouri'),
+    ('8e5852de-6e0e-45a9-8ff4-28d3f7c26b9d', 'med', 'bjaoui')
+ON CONFLICT (id) DO NOTHING;
+
+-- Insérer quelques offres d'emploi de test
+INSERT INTO public.jobs (id, title, company, location, type, description, is_active, source)
+VALUES
+    ('a1b2c3d4-e5f6-7890-1234-567890abcdef', 'Développeur Frontend', 'Innovatech', 'Tunis, Tunisie', 'CDI', 'Nous recherchons un développeur Frontend expérimenté pour rejoindre notre équipe.', true, 'LinkedIn'),
+    ('b2c3d4e5-f6a7-8901-2345-67890abcdef1', 'Ingénieur Backend', 'DataSolutions', 'Sfax, Tunisie', 'CDD', 'Responsable du développement et de la maintenance de notre infrastructure backend.', true, 'Khedma.tn'),
+    ('c3d4e5f6-a7b8-9012-3456-7890abcdef22', 'UI/UX Designer', 'CreativeMinds', 'Sousse, Tunisie', 'Freelance', 'Créer des expériences utilisateur exceptionnelles pour nos applications web et mobiles.', false, 'Tanitjobs')
+ON CONFLICT (id) DO NOTHING;
+
+-- Insérer quelques candidatures de test
+INSERT INTO public.applications (user_id, job_id, status, type)
+VALUES
+    ('00000000-0000-0000-0000-000000000003', 'a1b2c3d4-e5f6-7890-1234-567890abcdef', 'sent', 'manual'),
+    ('00000000-0000-0000-0000-000000000004', 'b2c3d4e5-f6a7-8901-2345-67890abcdef1', 'draft', 'manual')
+ON CONFLICT (user_id, job_id) DO NOTHING;
+
+-- Insérer quelques emplois sauvegardés de test
+INSERT INTO public.saved_jobs (user_id, job_id)
+VALUES
+    ('00000000-0000-0000-0000-000000000003', 'b2c3d4e5-f6a7-8901-2345-67890abcdef1')
+ON CONFLICT (user_id, job_id) DO NOTHING;

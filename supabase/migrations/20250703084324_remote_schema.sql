@@ -412,6 +412,8 @@ CREATE UNIQUE INDEX ai_settings_user_id_key ON public.ai_settings USING btree (u
 CREATE UNIQUE INDEX ai_usage_pkey ON public.ai_usage USING btree (id);
 
 CREATE UNIQUE INDEX applications_pkey ON public.applications USING btree (id);
+ALTER TABLE public.applications
+ADD CONSTRAINT applications_user_id_job_id_key UNIQUE (user_id, job_id);
 
 CREATE UNIQUE INDEX auto_application_settings_pkey ON public.auto_application_settings USING btree (id);
 
@@ -1130,7 +1132,7 @@ DECLARE
 BEGIN
   IF TG_OP = 'INSERT' THEN
     -- Extraire les compétences du job
-    job_skills := ARRAY(SELECT jsonb_array_elements_text(NEW.requirements));
+    job_skills := NEW.requirements;
     
     -- Trouver les utilisateurs avec des compétences correspondantes
     FOR user_record IN 

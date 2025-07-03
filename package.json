@@ -67,6 +67,7 @@
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.48.2",
+    "react-hot-toast": "^2.5.2",
     "react-redux": "^9.0.4",
     "react-resizable-panels": "^3.0.3",
     "react-router-dom": "^6.20.1",

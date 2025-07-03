@@ -1,133 +1,132 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, 
   Search, 
-  // Filter, 
-  // Plus,
   Edit3,
   Trash2,
   Shield,
   ShieldCheck,
-  // ShieldX,
-  // Mail,
-  // Calendar,
-  // MoreVertical,
   UserPlus,
   Download,
-  // Upload,
-  // Eye,
   Ban,
   CheckCircle,
   XCircle,
   Clock
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'Admin' | 'User' | 'Premium';
-  status: 'active' | 'inactive' | 'suspended';
-  createdAt: string;
-  lastLogin?: string;
-  applicationsCount: number;
-  profileCompletion: number;
-}
+import { AdminService, User } from '../../services/adminService';
+import UserManagementModal, { UserData } from '../../components/admin/UserManagementModal';
 
 const AdminUsers: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: '1',
-      firstName: 'Test',
-      lastName: 'User',
-      email: 'test@example.com',
-      role: 'Admin',
-      status: 'active',
-      createdAt: '2024-01-01T00:00:00.000Z',
-      lastLogin: '2024-01-15T10:30:00.000Z',
-      applicationsCount: 15,
-      profileCompletion: 95
-    },
-    {
-      id: '2',
-      firstName: 'Ahmed',
-      lastName: 'Ben Ali',
-      email: 'ahmed.benali@email.com',
-      role: 'Premium',
-      status: 'active',
-      createdAt: '2024-01-05T00:00:00.000Z',
-      lastLogin: '2024-01-14T15:20:00.000Z',
-      applicationsCount: 23,
-      profileCompletion: 88
-    },
-    {
-      id: '3',
-      firstName: 'Fatma',
-      lastName: 'Trabelsi',
-      email: 'fatma.trabelsi@email.com',
-      role: 'User',
-      status: 'active',
-      createdAt: '2024-01-10T00:00:00.000Z',
-      lastLogin: '2024-01-13T09:15:00.000Z',
-      applicationsCount: 8,
-      profileCompletion: 72
-    },
-    {
-      id: '4',
-      firstName: 'Mohamed',
-      lastName: 'Gharbi',
-      email: 'mohamed.gharbi@email.com',
-      role: 'User',
-      status: 'inactive',
-      createdAt: '2024-01-08T00:00:00.000Z',
-      applicationsCount: 3,
-      profileCompletion: 45
-    },
-    {
-      id: '5',
-      firstName: 'Leila',
-      lastName: 'Mansouri',
-      email: 'leila.mansouri@email.com',
-      role: 'User',
-      status: 'suspended',
-      createdAt: '2024-01-12T00:00:00.000Z',
-      lastLogin: '2024-01-12T14:45:00.000Z',
-      applicationsCount: 12,
-      profileCompletion: 67
-    }
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, suspended: 0, admin: 0, premium: 0 });
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'Admin' | 'User' | 'Premium'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'suspended'>('all');
-  // const [showAddModal, setShowAddModal] = useState(false);
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = searchTerm === '' || 
-      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
-    
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const userStats = {
-    total: users.length,
-    active: users.filter(u => u.status === 'active').length,
-    inactive: users.filter(u => u.status === 'inactive').length,
-    suspended: users.filter(u => u.status === 'suspended').length,
-    admins: users.filter(u => u.role === 'Admin').length,
-    premium: users.filter(u => u.role === 'Premium').length
+    const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, count } = await AdminService.getUsers({
+        page: 1,
+        pageSize: 50,
+        search: searchTerm,
+        // role: roleFilter === 'all' ? undefined : roleFilter, // Role filter in backend if available
+        // status: statusFilter === 'all' ? undefined : statusFilter, // Status filter in backend if available
+      });
+
+      const filteredData = data
+        .filter(u => roleFilter === 'all' || u.role?.toLowerCase() === roleFilter.toLowerCase())
+        .filter(u => statusFilter === 'all' || u.status.toLowerCase() === statusFilter.toLowerCase());
+
+      setUsers(filteredData);
+
+      // Update stats
+      const total = count || 0;
+      const active = data.filter(u => u.status === 'active').length;
+      const inactive = data.filter(u => u.status === 'inactive').length;
+      const suspended = data.filter(u => u.status === 'suspended').length;
+      const admin = data.filter(u => u.role === 'Admin').length;
+      const premium = data.filter(u => u.role === 'Premium').length;
+      setStats({ total, active, inactive, suspended, admin, premium });
+
+    } catch (err) {
+      toast.error('Erreur lors de la récupération des utilisateurs.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchTerm, roleFilter, statusFilter]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const handleOpenModal = (mode: 'create' | 'edit', user: User | null = null) => {
+    setModalMode(mode);
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedUser(null);
+  };
+
+    const handleSaveUser = async (userData: UserData) => {
+
+    const promise = new Promise<void>(async (resolve, reject) => {
+      try {
+        if (modalMode === 'edit' && selectedUser) {
+          await AdminService.updateUser(selectedUser.id, {
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            role: userData.role,
+          });
+        } else {
+          await AdminService.createUser(userData);
+        }
+        await fetchUsers();
+        handleCloseModal();
+        resolve();
+      } catch (err) {
+        console.error('Error saving user:', err);
+        reject(err);
+      }
+    });
+
+    toast.promise(promise, {
+      loading: 'Enregistrement en cours...',
+      success: 'Utilisateur enregistré avec succès!',
+            error: "Erreur lors de l'enregistrement.",
+    }).finally(() => {});
+  };
+
+    const handleDeleteUser = (userId: string) => {
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer cet utilisateur ?`)) return;
+
+    const promise = AdminService.deleteUser(userId).then(() => fetchUsers());
+
+    toast.promise(promise, {
+      loading: 'Suppression en cours...',
+      success: 'Utilisateur supprimé avec succès!',
+      error: 'Erreur lors de la suppression.',
+    });
   };
 
   const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'Admin': return <ShieldCheck className="h-4 w-4 text-red-600" />;
-      case 'Premium': return <Shield className="h-4 w-4 text-yellow-600" />;
+    switch (role?.toLowerCase()) {
+      case 'admin': return <ShieldCheck className="h-4 w-4 text-red-600" />;
+      case 'premium': return <Shield className="h-4 w-4 text-yellow-600" />;
       default: return <Users className="h-4 w-4 text-blue-600" />;
     }
   };
@@ -149,126 +148,87 @@ const AdminUsers: React.FC = () => {
   };
 
   const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'Admin': return 'bg-red-100 text-red-800';
-      case 'Premium': return 'bg-yellow-100 text-yellow-800';
+    switch (role?.toLowerCase()) {
+      case 'admin': return 'bg-red-100 text-red-800';
+      case 'premium': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-blue-100 text-blue-800';
-    }
-  };
-
-  const handleUserAction = (userId: string, action: 'edit' | 'suspend' | 'activate' | 'delete') => {
-    switch (action) {
-      case 'edit':
-        console.log('Edit user:', userId);
-        break;
-      case 'suspend':
-        setUsers(users.map(user => 
-          user.id === userId ? { ...user, status: 'suspended' as const } : user
-        ));
-        break;
-      case 'activate':
-        setUsers(users.map(user => 
-          user.id === userId ? { ...user, status: 'active' as const } : user
-        ));
-        break;
-      case 'delete':
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-          setUsers(users.filter(user => user.id !== userId));
-        }
-        break;
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Gestion des Utilisateurs
-          </h1>
-          <p className="text-gray-600">
-            Gérez les comptes utilisateurs et leurs permissions
-          </p>
+      <header className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Gestion des Utilisateurs</h1>
+            <p className="text-gray-600 mt-1">Gérez les utilisateurs, leurs rôles et leurs permissions.</p>
+          </div>
+          <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <Download className="h-4 w-4" />
+              <span>Exporter</span>
+            </button>
+            <button
+              onClick={() => handleOpenModal('create')}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <UserPlus className="h-4 w-4" />
+              <span>Ajouter</span>
+            </button>
+          </div>
         </div>
-        
-        <div className="flex items-center space-x-3 mt-4 sm:mt-0">
-          <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Download className="h-4 w-4" />
-            <span>Exporter</span>
-          </button>
-          
-          <button
-            onClick={() => console.log('Add user modal')}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <UserPlus className="h-4 w-4" />
-            <span>Nouvel utilisateur</span>
-          </button>
-        </div>
-      </motion.div>
+      </header>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        {[
-          { label: 'Total', value: userStats.total, color: 'bg-gray-100 text-gray-800' },
-          { label: 'Actifs', value: userStats.active, color: 'bg-green-100 text-green-800' },
-          { label: 'Inactifs', value: userStats.inactive, color: 'bg-gray-100 text-gray-800' },
-          { label: 'Suspendus', value: userStats.suspended, color: 'bg-red-100 text-red-800' },
-          { label: 'Admins', value: userStats.admins, color: 'bg-red-100 text-red-800' },
-          { label: 'Premium', value: userStats.premium, color: 'bg-yellow-100 text-yellow-800' }
-        ].map((stat) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        {[ 
+          { title: 'Total', value: stats.total, icon: Users },
+          { title: 'Actifs', value: stats.active, icon: CheckCircle },
+          { title: 'Admins', value: stats.admin, icon: ShieldCheck },
+          { title: 'Premium', value: stats.premium, icon: Shield },
+          { title: 'Inactifs', value: stats.inactive, icon: XCircle },
+          { title: 'Suspendus', value: stats.suspended, icon: Ban },
+        ].map((stat, index) => (
           <motion.div
-            key={stat.label}
+            key={index}
+            className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center"
+            transition={{ delay: index * 0.05 }}
           >
-            <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
-            <div className={`text-sm px-2 py-1 rounded-full ${stat.color}`}>
-              {stat.label}
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-gray-600">{stat.title}</h3>
+              <stat.icon className="h-5 w-5 text-gray-400" />
             </div>
+            <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
           </motion.div>
         ))}
       </div>
 
-      {/* Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-      >
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
               type="text"
-              placeholder="Rechercher..."
+              placeholder="Rechercher par nom, email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          
           <select
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as any)}
+            onChange={(e) => setRoleFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">Tous les rôles</option>
-            <option value="Admin">Admin</option>
-            <option value="Premium">Premium</option>
-            <option value="User">Utilisateur</option>
+            <option value="admin">Admin</option>
+            <option value="premium">Premium</option>
+            <option value="user">Utilisateur</option>
           </select>
-          
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
+            onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">Tous les statuts</option>
@@ -276,22 +236,10 @@ const AdminUsers: React.FC = () => {
             <option value="inactive">Inactif</option>
             <option value="suspended">Suspendu</option>
           </select>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">
-              {filteredUsers.length} utilisateur{filteredUsers.length !== 1 ? 's' : ''}
-            </span>
-          </div>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Users Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
-      >
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -299,123 +247,71 @@ const AdminUsers: React.FC = () => {
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Utilisateur</th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Rôle</th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Statut</th>
-                <th className="text-left py-3 px-6 font-medium text-gray-900">Candidatures</th>
-                <th className="text-left py-3 px-6 font-medium text-gray-900">Profil</th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Dernière connexion</th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map((user, index) => (
-                <motion.tr
-                  key={user.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                  className="border-b border-gray-100 hover:bg-gray-50"
-                >
-                  <td className="py-4 px-6">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
-                        <span className="text-blue-700 font-semibold text-sm">
-                          {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-                        </span>
+              {loading ? (
+                <tr><td colSpan={5} className="text-center py-8">Chargement...</td></tr>
+              ) : users.length === 0 ? (
+                <tr><td colSpan={5} className="text-center py-8">Aucun utilisateur trouvé.</td></tr>
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
+                          <span className="text-blue-700 font-semibold text-sm">
+                            {user.first_name?.charAt(0)}{user.last_name?.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{user.first_name} {user.last_name}</p>
+                          <p className="text-sm text-gray-600">{user.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {user.firstName} {user.lastName}
-                        </p>
-                        <p className="text-sm text-gray-600">{user.email}</p>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
+                        {getRoleIcon(user.role)}
+                        <span className="capitalize">{user.role || 'N/A'}</span>
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
+                        {getStatusIcon(user.status)}
+                        <span className="capitalize">{user.status}</span>
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="text-sm text-gray-600">
+                        {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR') : 'Jamais'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center space-x-2">
+                        <button onClick={() => handleOpenModal('edit', user)} className="p-1 text-gray-400 hover:text-blue-600"><Edit3 className="h-4 w-4" /></button>
+                                                <button onClick={() => handleDeleteUser(user.id)} className="p-1 text-gray-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></button>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                      {getRoleIcon(user.role)}
-                      <span>{user.role}</span>
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                      {getStatusIcon(user.status)}
-                      <span className="capitalize">{user.status}</span>
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className="text-sm font-medium text-gray-900">
-                      {user.applicationsCount}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-16 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full ${
-                            user.profileCompletion >= 80 ? 'bg-green-500' :
-                            user.profileCompletion >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                          }`}
-                          style={{ width: `${user.profileCompletion}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-gray-600">{user.profileCompletion}%</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className="text-sm text-gray-600">
-                      {user.lastLogin ? 
-                        new Date(user.lastLogin).toLocaleDateString('fr-FR', {
-                          day: '2-digit',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        }) : 
-                        'Jamais'
-                      }
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleUserAction(user.id, 'edit')}
-                        className="p-1 text-gray-400 hover:text-blue-600 rounded transition-colors"
-                        title="Modifier"
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </button>
-                      
-                      {user.status === 'active' ? (
-                        <button
-                          onClick={() => handleUserAction(user.id, 'suspend')}
-                          className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
-                          title="Suspendre"
-                        >
-                          <Ban className="h-4 w-4" />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleUserAction(user.id, 'activate')}
-                          className="p-1 text-gray-400 hover:text-green-600 rounded transition-colors"
-                          title="Activer"
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </button>
-                      )}
-                      
-                      <button
-                        onClick={() => handleUserAction(user.id, 'delete')}
-                        className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
-      </motion.div>
+      </div>
+
+      {isModalOpen && (
+                <UserManagementModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSave={handleSaveUser}
+          user={selectedUser}
+          mode={modalMode}
+        />
+      )}
     </div>
   );
 };

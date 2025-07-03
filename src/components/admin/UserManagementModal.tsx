@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
-  User, 
+  User as UserIcon,
   Mail, 
   Shield, 
   Save, 
@@ -14,8 +14,9 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
+import { User } from '../../services/adminService';
 
-interface UserData {
+export interface UserData {
   id?: string;
   firstName: string;
   lastName: string;
@@ -29,14 +30,7 @@ interface UserData {
 interface UserManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user?: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    role: string;
-    status: 'active' | 'inactive' | 'suspended';
-  };
+  user?: User | null;
   onSave: (userData: UserData) => Promise<void>;
   mode: 'create' | 'edit';
 }
@@ -196,7 +190,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                   {mode === 'create' ? (
                     <UserPlus className="h-6 w-6" />
                   ) : (
-                    <User className="h-6 w-6" />
+                    <UserIcon className="h-6 w-6" />
                   )}
                   <h2 className="text-xl font-bold">
                     {mode === 'create' ? 'Créer un utilisateur' : 'Modifier l\'utilisateur'}
@@ -242,7 +236,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                         Prénom
                       </label>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                        <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                         <input
                           type="text"
                           id="firstName"
@@ -260,7 +254,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({
                         Nom
                       </label>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                        <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                         <input
                           type="text"
                           id="lastName"

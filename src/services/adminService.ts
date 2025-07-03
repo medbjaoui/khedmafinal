@@ -433,6 +433,7 @@ export class AdminService {
   static async updateUser(userId: string, updates: {
     firstName?: string;
     lastName?: string;
+    role?: string;
   }): Promise<void> {
     try {
       // Update user profile
@@ -440,13 +441,29 @@ export class AdminService {
         .from('user_profiles')
         .update({
           ...(updates.firstName && { first_name: updates.firstName }),
-          ...(updates.lastName && { last_name: updates.lastName })
+          ...(updates.lastName && { last_name: updates.lastName }),
+          ...(updates.role && { role: updates.role })
         })
         .eq('id', userId);
       
       if (profileError) throw profileError;
     } catch (error) {
       console.error('Error updating user:', error);
+      throw error;
+    }
+  }
+
+  // Update user role
+  static async updateUserRole(userId: string, newRole: string): Promise<void> {
+    try {
+      const { error } = await supabase.rpc('update_user_role', {
+        target_user_id: userId,
+        new_role: newRole
+      });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating user role:', error);
       throw error;
     }
   }
