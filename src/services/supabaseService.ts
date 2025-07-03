@@ -332,11 +332,50 @@ export class SupabaseService {
   }
 
   static async markNotificationAsRead(userId: string, notificationId: string) {
+    const { error } = await supabase.rpc('mark_notification_read', {
+      notification_id: notificationId
+    });
+
+    if (error) throw error;
+  }
+
+  static async createNotification(userId: string, notification: {
+    type: 'application' | 'job' | 'interview' | 'reminder' | 'system';
+    title: string;
+    message: string;
+    priority?: 'low' | 'medium' | 'high';
+    actionUrl?: string;
+    metadata?: any;
+  }) {
+    const { data, error } = await supabase.rpc('create_notification', {
+      target_user_id: userId,
+      notification_type: notification.type,
+      notification_title: notification.title,
+      notification_message: notification.message,
+      notification_priority: notification.priority || 'medium',
+      notification_action_url: notification.actionUrl,
+      notification_metadata: notification.metadata
+    });
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async deleteNotification(notificationId: string) {
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', notificationId);
+
+    if (error) throw error;
+  }
+
+  static async markAllNotificationsAsRead(userId: string) {
     const { error } = await supabase
       .from('notifications')
       .update({ read: true })
-      .eq('id', notificationId)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .eq('read', false);
 
     if (error) throw error;
   }
@@ -371,21 +410,79 @@ export class SupabaseService {
     return data || [];
   }
 
-  static async setActiveCV(userId: string, cvId: string) {
-    // First, remove active status from all CVs
-    await supabase
+  static async createCVVersion(userId: string, cvData: {
+    name: string;
+    filePath: string;
+    originalFileName: string;
+    fileSize?: number;
+    fileType?: string;
+    description?: string;
+    analysisData?: any;
+  }) {
+    const { data, error } = await supabase
       .from('cv_versions')
-      .update({ is_active: false })
-      .eq('user_id', userId);
-
-    // Then set the selected CV as active
-    const { error } = await supabase
-      .from('cv_versions')
-      .update({ is_active: true })
-      .eq('id', cvId)
-      .eq('user_id', userId);
+      .insert({
+        user_id: userId,
+        name: cvData.name,
+        file_path: cvData.filePath,
+        original_file_name: cvData.originalFileName,
+        file_size: cvData.fileSize,
+        file_type: cvData.fileType,
+        description: cvData.description,
+        analysis_data: cvData.analysisData,
+        is_active: false
+      });
 
     if (error) throw error;
+    return data;
+  }
+
+  static async setActiveCV(userId: string, cvId: string) {
+    const { error } = await supabase.rpc('set_active_cv', {
+      cv_version_id: cvId
+    });
+
+    if (error) throw error;
+  }
+
+  static async updateCVVersion(cvId: string, updates: {
+    name?: string;
+    description?: string;
+    analysisData?: any;
+  }) {
+    const { data, error } = await supabase
+      .from('cv_versions')
+      .update({
+        name: updates.name,
+        description: updates.description,
+        analysis_data: updates.analysisData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', cvId);
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async deleteCVVersion(cvId: string) {
+    const { error } = await supabase
+      .from('cv_versions')
+      .delete()
+      .eq('id', cvId);
+
+    if (error) throw error;
+  }
+
+  static async getActiveCVVersion(userId: string) {
+    const { data, error } = await supabase
+      .from('cv_versions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
   }
 
   static async deleteFile(bucket: string, path: string) {
