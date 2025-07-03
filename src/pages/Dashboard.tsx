@@ -129,6 +129,9 @@ const Dashboard: React.FC = () => {
   const { profile, recommendations, profileCompletion } = useAppSelector((state) => state.profile);
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [savedJobsCount, setSavedJobsCount] = useState(0);
+  const [newOpportunities, setNewOpportunities] = useState(0);
+  const [userRecommendations, setUserRecommendations] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -143,16 +146,56 @@ const Dashboard: React.FC = () => {
       if (user) {
         try {
           dispatch(fetchJobsStart());
-          const [jobsData, applicationsData, profileData] = await Promise.all([
+          const [
+            jobsData, 
+            applicationsData, 
+            profileData,
+            savedJobsData,
+            recommendationsData
+          ] = await Promise.all([
             SupabaseService.getJobs(),
             SupabaseService.getUserApplications(user.id),
             SupabaseService.getUserProfile(user.id),
+            SupabaseService.getSavedJobs(user.id),
+            SupabaseService.getUserRecommendations(user.id)
           ]);
+          
           dispatch(fetchJobsSuccess(jobsData));
           dispatch(setApplications(applicationsData));
           if (profileData) {
             dispatch(setProfile(profileData));
           }
+          
+          // Définir les données dynamiques
+          setSavedJobsCount(savedJobsData.length);
+          setUserRecommendations(recommendationsData);
+          
+          // Calculer les nouvelles opportunités basées sur le profil utilisateur
+          const matchingJobs = jobsData.filter(job => {
+            if (!profileData) return false;
+            
+            // Logique de correspondance basée sur les compétences et le titre
+            const userSkills = profileData.skills?.map(s => s.name.toLowerCase()) || [];
+            const userTitle = profileData.title?.toLowerCase() || '';
+            
+            const jobDescription = job.description.toLowerCase();
+            const jobTitle = job.title.toLowerCase();
+            
+            // Vérifier si le job correspond aux compétences ou au titre
+            const skillMatch = userSkills.some(skill => 
+              jobDescription.includes(skill) || jobTitle.includes(skill)
+            );
+            
+            const titleMatch = userTitle && (
+              jobTitle.includes(userTitle) || 
+              jobDescription.includes(userTitle)
+            );
+            
+            return skillMatch || titleMatch;
+          });
+          
+          setNewOpportunities(matchingJobs.length);
+          
         } catch (error: any) {
           console.error("Error loading user data:", error);
           dispatch(fetchJobsFailure(error.message));
@@ -185,12 +228,13 @@ const Dashboard: React.FC = () => {
   }
 
   // Statistiques utilisateur
-  const completionPercentage = typeof profileCompletion === 'number' ? profileCompletion : 75;
+  const completionPercentage = typeof profileCompletion === 'number' ? profileCompletion : 
+    (profile?.completionScore || 0);
   const userStats = {
     appliedJobs: applications?.length || 0,
-    savedJobs: 12,
+    savedJobs: savedJobsCount,
     profileCompletion: completionPercentage,
-    newOpportunities: 8
+    newOpportunities: newOpportunities
   };
 
   // Offres récentes (top 3)
@@ -539,7 +583,7 @@ const Dashboard: React.FC = () => {
               </div>
               
               <div className="space-y-3">
-                {recommendations?.slice(0, 3).map((rec: any, index) => (
+                {userRecommendations?.slice(0, 3).map((rec: any, index) => (
                   <motion.div 
                     key={rec.id}
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -555,20 +599,52 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                   </motion.div>
-                )) || (
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100"
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div className="w-3 h-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mt-2"></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-gray-900">Optimisez votre profil</p>
-                        <p className="text-xs text-gray-600 mt-1">Ajoutez vos compétences et expériences pour attirer les recruteurs</p>
+                ))}
+                
+                {(!userRecommendations || userRecommendations.length === 0) && (
+                  <>
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100"
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className="w-3 h-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-gray-900">Complétez votre profil</p>
+                          <p className="text-xs text-gray-600 mt-1">Ajoutez vos compétences et expériences pour maximiser vos opportunités</p>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                    
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100"
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className="w-3 h-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-gray-900">Optimisez votre CV</p>
+                          <p className="text-xs text-gray-600 mt-1">Utilisez notre outil d'analyse pour améliorer votre CV</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100"
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className="w-3 h-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-gray-900">Explorez les opportunités</p>
+                          <p className="text-xs text-gray-600 mt-1">Découvrez les offres qui correspondent à votre profil</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </>
                 )}
               </div>
               
