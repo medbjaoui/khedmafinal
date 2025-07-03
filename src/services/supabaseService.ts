@@ -120,7 +120,7 @@ export class SupabaseService {
             lastUpdated: new Date().toISOString(),
             completionScore: 20
           };
-          
+
           try {
             await this.createUserProfile(userId, defaultProfile);
             return defaultProfile;
@@ -133,11 +133,11 @@ export class SupabaseService {
                 .select('*')
                 .eq('id', userId)
                 .single();
-              
+
               if (fetchError) {
                 return null;
               }
-              
+
               // Return the existing profile data
               return {
                 firstName: existingData.first_name,
@@ -209,7 +209,7 @@ export class SupabaseService {
   static async updateUserProfile(userId: string, updates: Partial<UserProfile>) {
     console.log('SupabaseService.updateUserProfile started');
     console.log('Parameters:', { userId, updates });
-    
+
     try {
       // 1. Update main profile data
       const { data, error } = await supabase
@@ -293,7 +293,7 @@ export class SupabaseService {
       console.log('Getting complete profile data...');
       const completeProfile = await this.getUserProfile(userId);
       console.log('Complete profile retrieved:', completeProfile);
-      
+
       return completeProfile;
     } catch (error) {
       console.error('Error in updateUserProfile:', error);
@@ -314,12 +314,78 @@ export class SupabaseService {
     return data;
   }
 
-  static getFileUrl(bucket: string, path: string) {
-    const { data } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(path);
-
+  static getFileUrl(bucket: string, path: string): string {
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
     return data.publicUrl;
+  }
+
+  // Notification methods
+  static async getNotifications(userId: string) {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  static async markNotificationAsRead(userId: string, notificationId: string) {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', notificationId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+  }
+
+  static subscribeToNotifications(userId: string, callback: (notification: any) => void) {
+    const subscription = supabase
+      .channel('notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`
+        },
+        (payload) => callback(payload.new)
+      )
+      .subscribe();
+
+    return subscription;
+  }
+
+  // CV Version methods
+  static async getCVVersions(userId: string) {
+    const { data, error } = await supabase
+      .from('cv_versions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  static async setActiveCV(userId: string, cvId: string) {
+    // First, remove active status from all CVs
+    await supabase
+      .from('cv_versions')
+      .update({ is_active: false })
+      .eq('user_id', userId);
+
+    // Then set the selected CV as active
+    const { error } = await supabase
+      .from('cv_versions')
+      .update({ is_active: true })
+      .eq('id', cvId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
   }
 
   static async deleteFile(bucket: string, path: string) {
@@ -358,23 +424,23 @@ export class SupabaseService {
     // Helper function to convert date strings to proper format
     const formatDate = (dateStr: string | undefined): string => {
       if (!dateStr) return '2020-01-01'; // Default date if no date provided
-      
+
       // If it's just a year (4 digits), convert to January 1st of that year
       if (/^\d{4}$/.test(dateStr)) {
         return `${dateStr}-01-01`;
       }
-      
+
       // If it's already in YYYY-MM-DD format, return as is
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
         return dateStr;
       }
-      
+
       // Try to parse other formats
       const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
         return date.toISOString().split('T')[0]; // YYYY-MM-DD format
       }
-      
+
       // If all else fails, return default date
       return '2020-01-01';
     };
@@ -452,23 +518,23 @@ export class SupabaseService {
     // Helper function to convert date strings to proper format
     const formatDate = (dateStr: string | undefined): string => {
       if (!dateStr) return '2020-01-01'; // Default date if no date provided
-      
+
       // If it's just a year (4 digits), convert to January 1st of that year
       if (/^\d{4}$/.test(dateStr)) {
         return `${dateStr}-01-01`;
       }
-      
+
       // If it's already in YYYY-MM-DD format, return as is
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
         return dateStr;
       }
-      
+
       // Try to parse other formats
       const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
         return date.toISOString().split('T')[0]; // YYYY-MM-DD format
       }
-      
+
       // If all else fails, return default date
       return '2020-01-01';
     };
@@ -596,12 +662,12 @@ export class SupabaseService {
     // Helper function to normalize language levels
     const normalizeLanguageLevel = (level: string): 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | 'Natif' => {
       const normalizedLevel = level.toLowerCase().trim();
-      
+
       // Direct matches
       if (['a1', 'a2', 'b1', 'b2', 'c1', 'c2', 'natif'].includes(normalizedLevel)) {
         return level.toUpperCase() as any;
       }
-      
+
       // Common variations
       if (['débutant', 'beginner', 'basic', 'élémentaire'].includes(normalizedLevel)) {
         return 'A1';
@@ -624,7 +690,7 @@ export class SupabaseService {
       if (['natif', 'native', 'maternelle', 'langue maternelle'].includes(normalizedLevel)) {
         return 'Natif';
       }
-      
+
       // Default to B1 if unknown
       return 'B1';
     };
@@ -687,23 +753,23 @@ export class SupabaseService {
     // Helper function to convert date strings to proper format
     const formatDate = (dateStr: string | undefined): string => {
       if (!dateStr) return '2020-01-01'; // Default date if no date provided
-      
+
       // If it's just a year (4 digits), convert to January 1st of that year
       if (/^\d{4}$/.test(dateStr)) {
         return `${dateStr}-01-01`;
       }
-      
+
       // If it's already in YYYY-MM-DD format, return as is
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
         return dateStr;
       }
-      
+
       // Try to parse other formats
       const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
         return date.toISOString().split('T')[0]; // YYYY-MM-DD format
       }
-      
+
       // If all else fails, return default date
       return '2020-01-01';
     };

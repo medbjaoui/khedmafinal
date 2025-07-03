@@ -7,6 +7,7 @@ import userReducer from './slices/userSlice';
 import profileReducer from './slices/profileSlice';
 import aiReducer from './slices/aiSlice';
 import adminReducer from './slices/adminSlice';
+import notificationsReducer from './slices/notificationsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     profile: profileReducer,
     ai: aiReducer,
     admin: adminReducer,
+    notifications: notificationsReducer,
   },
 });
 
