@@ -61,15 +61,29 @@ const Jobs: React.FC = () => {
     const loadJobs = async () => {
       dispatch(fetchJobsStart());
       try {
-        const data = await SupabaseService.getJobs();
+        // Charger les offres d'emploi avec plus d'options
+        const data = await SupabaseService.getJobs({
+          limit: 100 // Limiter le nombre d'offres chargées
+        });
         dispatch(fetchJobsSuccess(data));
+        
+        // Charger les emplois sauvegardés si utilisateur connecté
+        if (user?.id) {
+          const savedJobIds = await SupabaseService.getSavedJobs(user.id);
+          // Marquer les emplois sauvegardés
+          const jobsWithSavedStatus = data.map(job => ({
+            ...job,
+            saved: savedJobIds.includes(job.id)
+          }));
+          dispatch(fetchJobsSuccess(jobsWithSavedStatus));
+        }
       } catch (err: any) {
-        dispatch(fetchJobsFailure(err.message));
+        dispatch(fetchJobsFailure(err.message || 'Erreur lors du chargement des offres'));
       }
     };
 
     loadJobs();
-  }, [dispatch]);
+  }, [dispatch, user?.id]);
 
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -82,12 +96,29 @@ const Jobs: React.FC = () => {
     return matchesSearch && matchesLocation && matchesType;
   });
 
-  const toggleSaveJob = (jobId: string) => {
-    setSavedJobs(prev => 
-      prev.includes(jobId) 
-        ? prev.filter(id => id !== jobId)
-        : [...prev, jobId]
-    );
+  const toggleSaveJob = async (jobId: string) => {
+    if (!user?.id) return;
+    
+    try {
+      const isCurrentlySaved = savedJobs.includes(jobId);
+      
+      if (isCurrentlySaved) {
+        await SupabaseService.unsaveJob(user.id, jobId);
+        setSavedJobs(prev => prev.filter(id => id !== jobId));
+      } else {
+        await SupabaseService.saveJob(user.id, jobId);
+        setSavedJobs(prev => [...prev, jobId]);
+      }
+      
+      // Mettre à jour le store Redux
+      if (isCurrentlySaved) {
+        dispatch(unsaveJob(jobId));
+      } else {
+        dispatch(saveJob(jobId));
+      }
+    } catch (error) {
+      console.error('Error toggling job save status:', error);
+    }
   };
 
   const StatCard = ({ icon: Icon, title, value, description, color }: any) => (

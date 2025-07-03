@@ -79,13 +79,15 @@ const Applications: React.FC = () => {
 
   useEffect(() => {
     const loadApplications = async () => {
-      if (user) {
+      if (user?.id) {
         try {
           setLoading(true);
+          dispatch(startApplicationProcess());
           const data = await SupabaseService.getUserApplications(user.id);
           dispatch(setApplications(data));
         } catch (error) {
           console.error('Error loading applications:', error);
+          // Optionnel: dispatcher une action d'erreur
         } finally {
           setLoading(false);
         }
@@ -93,7 +95,7 @@ const Applications: React.FC = () => {
     };
 
     loadApplications();
-  }, [dispatch, user]);
+  }, [dispatch, user?.id]);
 
   const filteredApplications = applications.filter(app => {
     const matchesSearch = app.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
