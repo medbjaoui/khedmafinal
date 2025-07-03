@@ -320,13 +320,23 @@ export class AdminService {
       
       const { data, error, count } = await query;
       
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST116' || error.message.includes('403')) {
+          console.log('Access to system_alerts denied - admin privileges required');
+          return { data: [], count: 0 };
+        }
+        throw error;
+      }
       
       return {
         data: data || [],
         count: count || 0
       };
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'PGRST116' || error.message?.includes('403')) {
+        console.log('Access to system_alerts denied - admin privileges required');
+        return { data: [], count: 0 };
+      }
       console.error('Error fetching system alerts:', error);
       throw error;
     }

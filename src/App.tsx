@@ -26,6 +26,8 @@ import {
   Analytics,
   SavedJobs,
   Settings,
+  Tasks,
+  Reports,
   AdminDashboard,
   AdminUsers,
   AdminJobs,

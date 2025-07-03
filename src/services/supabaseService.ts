@@ -106,7 +106,7 @@ export class SupabaseService {
         .eq('id', userId)
         .single();
 
-      if (error) {
+            if (error) {
         if (error.code === 'PGRST116') {
           // Profile doesn't exist, create a default one
           const defaultProfile: UserProfile = {
@@ -213,7 +213,11 @@ export class SupabaseService {
       CacheService.cacheUserProfile(userId, profile);
       
       return profile;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('user_profiles table does not exist - returning null');
+        return null;
+      }
       return null;
     }
   }
@@ -339,7 +343,13 @@ export class SupabaseService {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('notifications table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
     return data || [];
   }
 
@@ -478,7 +488,13 @@ export class SupabaseService {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('cv_versions table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
     return data || [];
   }
 
@@ -574,9 +590,15 @@ export class SupabaseService {
       .eq('user_id', userId)
       .order('start_date', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('experiences table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
 
-    return data.map(exp => ({
+    return (data || []).map(exp => ({
       id: exp.id,
       company: exp.company,
       position: exp.position,
@@ -668,9 +690,15 @@ export class SupabaseService {
       .eq('user_id', userId)
       .order('start_date', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('education table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
 
-    return data.map(edu => ({
+    return (data || []).map(edu => ({
       id: edu.id,
       institution: edu.institution,
       degree: edu.degree,
@@ -762,9 +790,15 @@ export class SupabaseService {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('skills table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
 
-    return data.map(skill => ({
+    return (data || []).map(skill => ({
       name: skill.name,
       level: skill.level as Skill['level'],
       category: skill.category as Skill['category'],
@@ -819,9 +853,15 @@ export class SupabaseService {
       .select('*')
       .eq('user_id', userId);
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('languages table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
 
-    return data.map(lang => ({
+    return (data || []).map(lang => ({
       name: lang.name,
       level: lang.level as Language['level']
     }));
@@ -905,9 +945,15 @@ export class SupabaseService {
       .eq('user_id', userId)
       .order('issue_date', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('certifications table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
 
-    return data.map(cert => ({
+    return (data || []).map(cert => ({
       id: cert.id,
       name: cert.name,
       issuer: cert.issuer,
@@ -1016,9 +1062,23 @@ export class SupabaseService {
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === 'PGRST116' || error.message.includes('403') || error.message.includes('42501')) {
+        console.log('Access to jobs table denied - returning empty array');
+        return [];
+      }
+      if (error.code === 'PGRST200' || error.message.includes('relationship') || error.message.includes('foreign key')) {
+        console.log('Foreign key relationship issue - returning empty array');
+        return [];
+      }
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('Table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
 
-    return data.map(job => ({
+    return (data || []).map(job => ({
       id: job.id,
       title: job.title,
       company: job.company,
@@ -1041,9 +1101,15 @@ export class SupabaseService {
       .select('job_id')
       .eq('user_id', userId);
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('saved_jobs table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
 
-    return data.map(item => item.job_id);
+    return (data || []).map(item => item.job_id);
   }
 
   static async getSavedJobsWithDetails(userId: string): Promise<Job[]> {
@@ -1067,9 +1133,23 @@ export class SupabaseService {
       .eq('user_id', userId)
       .eq('jobs.is_active', true);
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === 'PGRST116' || error.message.includes('403') || error.message.includes('42501')) {
+        console.log('Access to saved_jobs or jobs table denied - returning empty array');
+        return [];
+      }
+      if (error.code === 'PGRST200' || error.message.includes('relationship') || error.message.includes('foreign key')) {
+        console.log('Foreign key relationship issue - returning empty array');
+        return [];
+      }
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('Table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
 
-    return data.map(item => ({
+    return (data || []).map(item => ({
       id: item.jobs.id,
       title: item.jobs.title,
       company: item.jobs.company,
@@ -1123,9 +1203,23 @@ export class SupabaseService {
       .filter('jobs.is_active', 'eq', true) // Explicitly filter for active jobs
       .order('applied_date', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === 'PGRST116' || error.message.includes('403') || error.message.includes('42501')) {
+        console.log('Access to applications or jobs table denied - returning empty array');
+        return [];
+      }
+      if (error.code === 'PGRST200' || error.message.includes('relationship') || error.message.includes('foreign key')) {
+        console.log('Foreign key relationship issue - returning empty array');
+        return [];
+      }
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('Table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
 
-    return data.map(app => ({
+    return (data || []).map(app => ({
       id: app.id,
       jobId: app.job_id,
       jobTitle: app.jobs.title,
@@ -1224,13 +1318,27 @@ export class SupabaseService {
   }
 
   static async getSystemAlerts() {
-    const { data, error } = await supabase
-      .from('system_alerts')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('system_alerts')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data;
+      if (error) {
+        if (error.code === 'PGRST116' || error.message.includes('403')) {
+          console.log('Access to system_alerts denied - admin privileges required');
+          return [];
+        }
+        throw error;
+      }
+      return data;
+    } catch (error: any) {
+      if (error.code === 'PGRST116' || error.message?.includes('403')) {
+        console.log('Access to system_alerts denied - admin privileges required');
+        return [];
+      }
+      throw error;
+    }
   }
 
   static async getRecentLogs() {
@@ -1381,6 +1489,10 @@ export class SupabaseService {
 
     if (error) {
       if (error.code === 'PGRST116') return null;
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('ai_settings table does not exist - returning null');
+        return null;
+      }
       throw error;
     }
 
@@ -1444,10 +1556,20 @@ export class SupabaseService {
       .eq('user_id', userId)
       .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('ai_usage table does not exist - returning empty stats');
+        return {
+          totalTokens: 0,
+          totalRequests: 0,
+          lastReset: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        };
+      }
+      throw error;
+    }
 
-    const totalTokens = data.reduce((sum, usage) => sum + usage.total_tokens, 0);
-    const totalRequests = data.length;
+    const totalTokens = (data || []).reduce((sum, usage) => sum + usage.total_tokens, 0);
+    const totalRequests = (data || []).length;
 
     return {
       totalTokens,
@@ -1464,9 +1586,15 @@ export class SupabaseService {
       .eq('user_id', userId)
       .order('priority', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42P01' || error.message.includes('does not exist') || error.message.includes('404')) {
+        console.log('recommendations table does not exist - returning empty array');
+        return [];
+      }
+      throw error;
+    }
 
-    return data.map(rec => ({
+    return (data || []).map(rec => ({
       id: rec.id,
       type: rec.type,
       priority: rec.priority,

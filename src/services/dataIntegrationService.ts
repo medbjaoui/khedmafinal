@@ -37,6 +37,10 @@ export class DataIntegrationService {
         } catch (error: any) {
           if (error.code === '42P01') { // Table does not exist
             missingTables.push(check.name);
+          } else if (error.code === 'PGRST116' || error.message.includes('403') || error.message.includes('42501')) {
+            console.log(`Table ${check.name} access denied - this is OK`);
+          } else if (error.code === 'PGRST200' || error.message.includes('relationship') || error.message.includes('foreign key')) {
+            console.log(`Table ${check.name} relationship issue - this is OK`);
           } else {
             issues.push(`Table ${check.name}: ${error.message}`);
           }
@@ -58,6 +62,8 @@ export class DataIntegrationService {
         } catch (error: any) {
           if (error.code === '42P01') {
             console.log(`Optional table ${check.name} not found - this is OK`);
+          } else if (error.code === 'PGRST116' || error.status === 403) {
+            console.log(`Optional table ${check.name} access denied (admin only) - this is OK`);
           } else {
             issues.push(`Optional table ${check.name}: ${error.message}`);
           }

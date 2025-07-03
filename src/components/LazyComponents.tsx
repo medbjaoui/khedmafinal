@@ -1,4 +1,3 @@
-
 import { lazy, Suspense, ComponentType } from 'react';
 import { Loader2 } from 'lucide-react';
 
@@ -31,6 +30,8 @@ export const LazyCVAnalysis = lazy(() => import('../pages/CVAnalysis'));
 export const LazyAnalytics = lazy(() => import('../pages/Analytics'));
 export const LazySavedJobs = lazy(() => import('../pages/SavedJobs'));
 export const LazySettings = lazy(() => import('../pages/Settings'));
+export const LazyTasks = lazy(() => import('../pages/Tasks'));
+export const LazyReports = lazy(() => import('../pages/Reports'));
 
 // Lazy loaded admin components
 export const LazyAdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
@@ -57,6 +58,8 @@ export const CVAnalysis = withLazyLoading(LazyCVAnalysis, 'Chargement de l\'anal
 export const Analytics = withLazyLoading(LazyAnalytics, 'Chargement des statistiques...');
 export const SavedJobs = withLazyLoading(LazySavedJobs, 'Chargement des favoris...');
 export const Settings = withLazyLoading(LazySettings, 'Chargement des paramètres...');
+export const Tasks = withLazyLoading(LazyTasks, 'Chargement des tâches...');
+export const Reports = withLazyLoading(LazyReports, 'Chargement des rapports...');
 
 // Admin components
 export const AdminDashboard = withLazyLoading(LazyAdminDashboard, 'Chargement administration...');
