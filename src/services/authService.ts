@@ -2,6 +2,14 @@ import { supabase } from './supabaseService';
 import { User } from '../store/slices/authSlice';
 import { TokenManager } from '../utils/tokenManager';
 
+export interface LoginHistoryEntry {
+  id: string;
+  user_id: string;
+  ip_address: string;
+  user_agent: string;
+  created_at: string;
+}
+
 export interface AuthResponse {
   user: User | null;
   token: string | null;
@@ -13,46 +21,62 @@ export class AuthService {
   // Sign in with email and password
   static async signIn(email: string, password: string): Promise<AuthResponse> {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      // Invoke the Supabase Edge Function to handle sign-in and logging
+      const { data, error } = await supabase.functions.invoke('sign-in-with-log', {
+        body: { email, password },
       });
 
-      if (error) throw error;
-
-      if (!data.user || !data.session) {
-        throw new Error('Échec de la connexion');
+      if (error) {
+        // If the function returns a specific error message, use it
+        if (data?.error) {
+          throw new Error(data.error);
+        }
+        throw error;
       }
+
+      // The function returns the session data inside the 'data' property
+      const { user: authUser, session } = data;
+
+      if (!authUser || !session) {
+        throw new Error('Échec de la connexion: Données de session non valides');
+      }
+
+      // Manually set the session for the Supabase client
+      await supabase.auth.setSession({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+      });
 
       // Store tokens in cookies
       TokenManager.setTokens(
-        data.session.access_token,
-        data.session.refresh_token
+        session.access_token,
+        session.refresh_token
       );
 
       const userData: User = {
-        id: data.user.id,
-        email: data.user.email!,
-        firstName: data.user.user_metadata?.first_name || 'Utilisateur',
-        lastName: data.user.user_metadata?.last_name || '',
-        role: data.user.user_metadata?.role || 'User',
-        createdAt: data.user.created_at,
+        id: authUser.id,
+        email: authUser.email!,
+        firstName: authUser.user_metadata?.first_name || 'Utilisateur',
+        lastName: authUser.user_metadata?.last_name || '',
+        role: authUser.user_metadata?.role || 'User',
+        createdAt: authUser.created_at,
         lastLogin: new Date().toISOString(),
         isActive: true
       };
 
       return {
         user: userData,
-        token: data.session.access_token,
-        refreshToken: data.session.refresh_token
+        token: session.access_token,
+        refreshToken: session.refresh_token
       };
     } catch (error) {
       console.error('Sign in error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur de connexion';
       return {
         user: null,
         token: null,
         refreshToken: null,
-        error: error instanceof Error ? error.message : 'Erreur de connexion'
+        error: errorMessage
       };
     }
   }
@@ -113,11 +137,12 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Sign up error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur d\'inscription';
       return {
         user: null,
         token: null,
         refreshToken: null,
-        error: error instanceof Error ? error.message : 'Erreur d\'inscription'
+        error: errorMessage
       };
     }
   }
@@ -184,10 +209,11 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Refresh token error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur de rafraîchissement du token';
       return {
         token: null,
         refreshToken: null,
-        error: error instanceof Error ? error.message : 'Erreur de rafraîchissement du token'
+        error: errorMessage
       };
     }
   }
@@ -196,7 +222,7 @@ export class AuthService {
   static async resetPassword(email: string): Promise<{ success: boolean; error?: string }> {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
+        redirectTo: `${window.location.origin}/update-password`
       });
 
       if (error) throw error;
@@ -204,9 +230,10 @@ export class AuthService {
       return { success: true };
     } catch (error) {
       console.error('Reset password error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la réinitialisation du mot de passe';
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Erreur lors de la réinitialisation du mot de passe'
+        error: errorMessage
       };
     }
   }
@@ -223,9 +250,10 @@ export class AuthService {
       return { success: true };
     } catch (error) {
       console.error('Update password error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la mise à jour du mot de passe';
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Erreur lors de la mise à jour du mot de passe'
+        error: errorMessage
       };
     }
   }
@@ -250,9 +278,10 @@ export class AuthService {
       return { success: true };
     } catch (error) {
       console.error('Update user metadata error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la mise à jour des informations utilisateur';
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Erreur lors de la mise à jour des informations utilisateur'
+        error: errorMessage
       };
     }
   }
@@ -265,6 +294,24 @@ export class AuthService {
     } catch (error) {
       console.error('Session validation error:', error);
       return false;
+    }
+  }
+
+  // Get user's login history
+  static async getLoginHistory(): Promise<{ data: LoginHistoryEntry[] | null; error: any }> {
+    try {
+      const { data, error } = await supabase
+        .from('login_history')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10); // Get the last 10 login events
+
+      if (error) throw error;
+
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error fetching login history:', error);
+      return { data: null, error };
     }
   }
 }

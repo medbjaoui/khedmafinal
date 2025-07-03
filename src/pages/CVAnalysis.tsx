@@ -193,6 +193,45 @@ const CVAnalysis: React.FC = () => {
           </div>
         </motion.div>
 
+        {/* Standard Compliance */}
+        {current?.analysisData?.analysis?.standardCompliance && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+          >
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
+              Conformité aux Normes
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-gray-800 flex items-center">
+                  {current.analysisData.analysis.standardCompliance.international.compliant ? (
+                    <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 text-orange-500 mr-2" />
+                  )}
+                  Normes Internationales
+                </h3>
+                <p className="text-sm text-gray-600 ml-7">{current.analysisData.analysis.standardCompliance.international.notes}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 flex items-center">
+                  {current.analysisData.analysis.standardCompliance.canadian.compliant ? (
+                    <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 text-orange-500 mr-2" />
+                  )}
+                  Normes Canadiennes
+                </h3>
+                <p className="text-sm text-gray-600 ml-7">{current.analysisData.analysis.standardCompliance.canadian.notes}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Strengths */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -201,12 +240,12 @@ const CVAnalysis: React.FC = () => {
           className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
         >
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-            Points forts
+            <Star className="h-5 w-5 text-yellow-500 mr-2" />
+            Points Forts
           </h2>
           
           <div className="space-y-3">
-            {current?.strengths.map((strength, index) => (
+            {(current?.analysisData?.analysis?.strengths || current?.strengths || []).map((strength, index) => (
               <div key={index} className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
                 <p className="text-sm text-gray-700">{strength}</p>
@@ -227,13 +266,25 @@ const CVAnalysis: React.FC = () => {
             Recommandations
           </h2>
           
-          <div className="space-y-3">
-            {current?.recommendations.map((rec, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
-                <p className="text-sm text-gray-700">{rec}</p>
-              </div>
-            ))}
+          <div className="space-y-4">
+            {current?.analysisData?.analysis?.suggestions && current.analysisData.analysis.suggestions.length > 0 ? (
+              current.analysisData.analysis.suggestions.map((rec, index) => (
+                <div key={index} className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold text-sm text-gray-800">{rec.area}</span>
+                    <p className="text-sm text-gray-700">{rec.suggestion}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              current?.recommendations.map((rec, index) => (
+                <div key={index} className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                  <p className="text-sm text-gray-700">{rec}</p>
+                </div>
+              ))
+            )}
           </div>
         </motion.div>
       </div>

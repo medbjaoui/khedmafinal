@@ -1,13 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Textarea } from '../ui/textarea';
-import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Wand2, Save, Eye, Trash2, Copy, TrendingUp } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { Wand2, Save, Eye, Copy, TrendingUp } from 'lucide-react';
+import { useAppSelector } from '../../hooks/redux';
 import { getAIService } from '../../services/aiService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { ScrollArea } from '../ui/scroll-area';
@@ -30,9 +28,8 @@ interface AITemplate {
 }
 
 export const AITemplateManager: React.FC = () => {
-  const dispatch = useAppDispatch();
   const { profile } = useAppSelector(state => state.profile);
-  const { templates, loading } = useAppSelector(state => state.applications);
+  const { templates } = useAppSelector(state => state.applications);
   const [isGenerating, setIsGenerating] = useState(false);
   const [newTemplate, setNewTemplate] = useState<Partial<AITemplate>>({
     tone: 'professional',
@@ -63,7 +60,7 @@ export const AITemplateManager: React.FC = () => {
   ];
 
   const handleGenerateTemplate = async () => {
-    if (!newTemplate.industry || !newTemplate.tone) {
+    if (!profile || !newTemplate.industry || !newTemplate.tone) {
       return;
     }
 
@@ -251,7 +248,7 @@ export const AITemplateManager: React.FC = () => {
 
       {/* Template Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {templates.map((template: AITemplate) => (
+        {(templates as any[]).map((template: AITemplate) => (
           <Card key={template.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
@@ -353,3 +350,5 @@ export const AITemplateManager: React.FC = () => {
     </div>
   );
 };
+
+export default AITemplateManager;

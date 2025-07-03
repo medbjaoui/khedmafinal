@@ -53,7 +53,7 @@ Ce document liste toutes les fonctionnalités manquantes et les tables qui ne so
 - [ ] **Gestion des sessions**
   - [ ] Sessions multiples
   - [ ] Déconnexion automatique
-  - [ ] Historique des connexions
+  - [x] Historique des connexions
 
 - [ ] **Récupération de compte**
   - [ ] Réinitialisation de mot de passe par email
@@ -190,9 +190,9 @@ Ce document liste toutes les fonctionnalités manquantes et les tables qui ne so
 
 ### Phase 2 - Fonctionnalités Core (Important)
 1. **Gestion des profils**
-   - [ ] CV Builder
-   - [ ] Portfolio
-   - [ ] Gestion des compétences
+   - [x] CV Builder
+   - [x] Portfolio
+   - [x] Gestion des compétences
 
 2. **Système d'emplois**
    - [ ] Recherche avancée

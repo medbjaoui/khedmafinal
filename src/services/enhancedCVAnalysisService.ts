@@ -43,6 +43,23 @@ export interface CVExtractedData {
     description: string;
     technologies: string[];
   }>;
+  analysis?: {
+    strengths: string[];
+    suggestions: Array<{
+      area: string;
+      suggestion: string;
+    }>;
+    standardCompliance: {
+      international: {
+        compliant: boolean;
+        notes: string;
+      };
+      canadian: {
+        compliant: boolean;
+        notes: string;
+      };
+    };
+  };
 }
 
 export interface EnhancedCVAnalysisResult {
@@ -132,8 +149,18 @@ class EnhancedCVAnalysisService {
   }
   
   private createAnalysisPrompt(rawText: string): string {
-    return `Analyse ce CV en français et extrait les informations suivantes au format JSON strict. Ne retourne que le JSON, sans commentaire ni texte supplémentaire :
+    return `Analyse ce CV en français et effectue deux tâches :
+1. Extrait les informations suivantes au format JSON strict.
+2. Fournis une analyse détaillée comme décrit dans la section "analysis" du JSON.
 
+Instructions pour l'analyse :
+- Identifie les points forts clairs et concis.
+- Fournis une liste COMPLÈTE de suggestions d'amélioration. Chaque suggestion doit être actionnable.
+- Évalue la conformité du CV avec les normes internationales (longueur, clarté, pas d'infos personnelles superflues) ET les normes spécifiques au marché du travail canadien (importance du résumé, format chronologique, etc.).
+
+Ne retourne que le JSON, sans commentaire ni texte supplémentaire.
+
+JSON à remplir :
 {
   "personalInfo": {
     "name": "nom complet",
@@ -180,7 +207,30 @@ class EnhancedCVAnalysisService {
       "description": "description",
       "technologies": ["tech1", "tech2"]
     }
-  ]
+  ],
+  "analysis": {
+    "strengths": ["Point fort 1", "Point fort 2"],
+    "suggestions": [
+      {
+        "area": "Contenu",
+        "suggestion": "Suggestion d'amélioration détaillée 1."
+      },
+      {
+        "area": "Format",
+        "suggestion": "Suggestion d'amélioration détaillée 2."
+      }
+    ],
+    "standardCompliance": {
+      "international": {
+        "compliant": true,
+        "notes": "Le CV suit les conventions internationales générales."
+      },
+      "canadian": {
+        "compliant": false,
+        "notes": "Pour le marché canadien, il est recommandé d'adapter..."
+      }
+    }
+  }
 }
 
 CV à analyser :
@@ -299,6 +349,15 @@ ${rawText}`;
         issueDate: this.formatCertificationDate(cert.date),
         credentialId: '',
         url: ''
+      })),
+      portfolio: data.projects.map(proj => ({
+        id: `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        title: proj.name,
+        description: proj.description,
+        url: '',
+        imageUrl: '',
+        category: 'Projet de CV',
+        tags: proj.technologies,
       })),
       cvFilePath: '',
       lastUpdated: new Date().toISOString(),

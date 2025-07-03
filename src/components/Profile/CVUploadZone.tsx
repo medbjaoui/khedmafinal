@@ -96,7 +96,7 @@ const CVUploadZone: React.FC = () => {
       
       console.log('Calling CVService.updateProfileWithCVData...');
       // Update the profile with the analyzed data and upload CV to storage
-      const { profile: updatedProfile } = await CVService.updateProfileWithCVData(user.id, analysisResults.profile, analysisResults.file);
+      const updatedProfile = await CVService.updateProfileWithCVData(user.id, analysisResults.profile, analysisResults.file);
       console.log('CVService.updateProfileWithCVData completed');
       console.log('Updated profile:', updatedProfile);
       

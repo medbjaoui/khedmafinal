@@ -1,7 +1,7 @@
 import { cvAnalysisService } from './cvAnalysisService';
 import { enhancedCVAnalysisService } from './enhancedCVAnalysisService';
 import { SupabaseService } from './supabaseService';
-import { UserProfile } from '../store/slices/profileSlice';
+import { UserProfile, PortfolioItem } from '../store/slices/profileSlice';
 
 export class CVService {
   // Extract and analyze CV without updating profile
@@ -78,7 +78,7 @@ export class CVService {
     try {
       // 1. Upload CV to Supabase Storage
       const timestamp = Date.now();
-      const filePath = `cvs/${userId}/${timestamp}_${file.name}`;
+      const filePath = `${userId}/${timestamp}_${file.name}`;
 
       await SupabaseService.uploadFile('cvs', filePath, file);
 
@@ -139,6 +139,7 @@ export class CVService {
       location: personalInfo.address || '',
       title: cvData.experience?.[0]?.title || '',
       summary: cvData.summary || '',
+      portfolio: [],
       linkedin: personalInfo.linkedin || '',
       github: personalInfo.website || '',
       experiences: (cvData.experience || []).map((exp: any) => ({
@@ -276,6 +277,90 @@ export class CVService {
     score += Math.min((cvData.skills || []).length * 2, 10);
 
     return Math.min(score, 100);
+  }
+
+  static async addSkillToProfile(userId: string, skill: { name: string; level: 'Débutant' | 'Intermédiaire' | 'Avancé' | 'Expert'; category: 'Technique' | 'Linguistique' | 'Soft Skills' | 'Outils' }): Promise<any[]> {
+    try {
+      const userProfile = await SupabaseService.getUserProfile(userId);
+      if (!userProfile) {
+        throw new Error('User profile not found');
+      }
+
+      const updatedSkills = [...(userProfile.skills || []), { ...skill, verified: false }];
+
+      await SupabaseService.updateUserProfile(userId, { skills: updatedSkills });
+
+      return updatedSkills;
+    } catch (error) {
+      console.error('Error adding skill to profile:', error);
+      throw error;
+    }
+  }
+
+  static async removeSkillFromProfile(userId: string, skillName: string): Promise<any[]> {
+    try {
+      const userProfile = await SupabaseService.getUserProfile(userId);
+      if (!userProfile) {
+        throw new Error('User profile not found');
+      }
+
+      const updatedSkills = (userProfile.skills || []).filter(s => s.name !== skillName);
+
+      await SupabaseService.updateUserProfile(userId, { skills: updatedSkills });
+
+      return updatedSkills;
+    } catch (error) {
+      console.error('Error removing skill from profile:', error);
+      throw error;
+    }
+  }
+
+  static async addPortfolioItemToProfile(userId: string, item: Omit<PortfolioItem, 'id'>): Promise<PortfolioItem> {
+    try {
+      const userProfile = await SupabaseService.getUserProfile(userId);
+      if (!userProfile) {
+        throw new Error('User profile not found');
+      }
+      const newItem = { ...item, id: `proj_${Date.now()}` };
+      const updatedPortfolio = [...(userProfile.portfolio || []), newItem];
+      await SupabaseService.updateUserProfile(userId, { portfolio: updatedPortfolio });
+      return newItem;
+    } catch (error) {
+      console.error('Error adding portfolio item:', error);
+      throw error;
+    }
+  }
+
+  static async updatePortfolioItemInProfile(userId: string, itemId: string, updates: Partial<PortfolioItem>): Promise<PortfolioItem[]> {
+    try {
+      const userProfile = await SupabaseService.getUserProfile(userId);
+      if (!userProfile) {
+        throw new Error('User profile not found');
+      }
+      const updatedPortfolio = (userProfile.portfolio || []).map(item => 
+          item.id === itemId ? { ...item, ...updates } : item
+      );
+      await SupabaseService.updateUserProfile(userId, { portfolio: updatedPortfolio });
+      return updatedPortfolio;
+    } catch (error) {
+      console.error('Error updating portfolio item:', error);
+      throw error;
+    }
+  }
+
+  static async removePortfolioItemFromProfile(userId: string, itemId: string): Promise<PortfolioItem[]> {
+    try {
+      const userProfile = await SupabaseService.getUserProfile(userId);
+      if (!userProfile) {
+        throw new Error('User profile not found');
+      }
+      const updatedPortfolio = (userProfile.portfolio || []).filter(item => item.id !== itemId);
+      await SupabaseService.updateUserProfile(userId, { portfolio: updatedPortfolio });
+      return updatedPortfolio;
+    } catch (error) {
+      console.error('Error removing portfolio item:', error);
+      throw error;
+    }
   }
 
   // Original method for backward compatibility

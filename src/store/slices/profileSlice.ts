@@ -46,6 +46,15 @@ export interface Certification {
   url?: string;
 }
 
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  description: string;
+  url?: string;
+  imageUrl?: string;
+  tags: string[];
+}
+
 export interface UserProfile {
   // Personal Information
   firstName: string;
@@ -64,9 +73,9 @@ export interface UserProfile {
   skills: Skill[];
   languages: Language[];
   certifications: Certification[];
+  portfolio: PortfolioItem[];
   
   // Additional Information
-  portfolio?: string;
   linkedin?: string;
   github?: string;
   website?: string;
@@ -265,6 +274,29 @@ const profileSlice = createSlice({
         state.profileCompletion = calculateProfileCompletion(state.profile);
       }
     },
+
+    // Portfolio Actions
+    addPortfolioItem: (state, action: PayloadAction<PortfolioItem>) => {
+        if (state.profile) {
+            if (!state.profile.portfolio) {
+                state.profile.portfolio = [];
+            }
+            state.profile.portfolio.push(action.payload);
+        }
+    },
+    updatePortfolioItem: (state, action: PayloadAction<{id: string; data: Partial<PortfolioItem>}>) => {
+        if (state.profile && state.profile.portfolio) {
+            const index = state.profile.portfolio.findIndex(item => item.id === action.payload.id);
+            if (index !== -1) {
+                state.profile.portfolio[index] = { ...state.profile.portfolio[index], ...action.payload.data };
+            }
+        }
+    },
+    removePortfolioItem: (state, action: PayloadAction<string>) => {
+        if (state.profile && state.profile.portfolio) {
+            state.profile.portfolio = state.profile.portfolio.filter(item => item.id !== action.payload);
+        }
+    },
     updateLanguages: (state, action: PayloadAction<Language[]>) => {
       if (state.profile) {
         state.profile.languages = action.payload;
@@ -352,7 +384,7 @@ function calculateProfileCompletion(profile: UserProfile) {
   if (profile.title) professionalFields++;
   if (profile.summary && profile.summary.length > 50) professionalFields++;
   if (profile.linkedin) professionalFields++;
-  if (profile.portfolio || profile.github || profile.website) professionalFields++;
+  if ((profile.portfolio && profile.portfolio.length > 0) || profile.github || profile.website) professionalFields++;
   sections.professional = Math.round((professionalFields / professionalTotal) * 100);
 
   // Experience (25%) - Handle undefined arrays
@@ -507,6 +539,9 @@ export const {
   updateSkills,
   addSkill,
   removeSkill,
+  addPortfolioItem,
+  updatePortfolioItem,
+  removePortfolioItem,
   updateLanguages,
   addCertification,
   removeCertification,

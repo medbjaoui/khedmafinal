@@ -1,23 +1,12 @@
 
-import React, { useEffect, useState } from 'react';
-import { Bell, X, Check, AlertCircle, Briefcase, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, X, AlertCircle, Briefcase, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { markNotificationAsRead, markAllAsRead } from '../../store/slices/notificationsSlice';
-
-interface Notification {
-  id: string;
-  type: 'application' | 'job' | 'interview' | 'reminder';
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-  actionUrl?: string;
-  priority: 'low' | 'medium' | 'high';
-}
 
 export const NotificationCenter: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -152,3 +141,5 @@ export const NotificationCenter: React.FC = () => {
     </div>
   );
 };
+
+export default NotificationCenter;

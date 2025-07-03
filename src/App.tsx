@@ -4,6 +4,9 @@ import { Provider } from 'react-redux';
 import { store } from './store';
 import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { restoreUserSession } from './store/slices/authSlice';
+import { Toaster } from 'react-hot-toast';
+import { useIdleTimer } from './hooks/useIdleTimer';
+import { IdleWarningModal } from './components/Auth/IdleWarningModal';
 
 // Auth Components
 import LoginForm from './components/Auth/LoginForm';
@@ -45,6 +48,7 @@ const AppContent: React.FC = () => {
   const { isAuthenticated, loading, user } = useAppSelector(state => state.auth);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [initializing, setInitializing] = useState(true);
+  const { isIdle, resetTimer, handleSignOut } = useIdleTimer();
 
   useEffect(() => {
     // Try to restore session on app start
@@ -106,6 +110,11 @@ const AppContent: React.FC = () => {
   // Show main app if authenticated
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <IdleWarningModal
+        isOpen={isIdle}
+        onStay={resetTimer}
+        onLogout={handleSignOut}
+      />
       <Header 
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
       />
@@ -168,6 +177,16 @@ const AppContent: React.FC = () => {
                   <Route path="/tasks" element={
                     <ProtectedRoute>
                       <Tasks />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <Profile />
                     </ProtectedRoute>
                   } />
                   <Route path="/reports" element={
@@ -254,6 +273,7 @@ function App() {
   return (
     <Provider store={store}>
       <Router>
+        <Toaster position="bottom-right" />
         <AppContent />
       </Router>
     </Provider>
