@@ -33,12 +33,42 @@ const CVAnalysis: React.FC = () => {
   const calculateDetailedScores = () => {
     if (!current) return { content: 75, format: 80, keywords: 70, readability: 85 };
     
+    // Utiliser les scores réels de l'analyse CV si disponibles
+    const analysisData = current.analysisData;
+    if (analysisData && analysisData.detailedScores) {
+      return {
+        content: analysisData.detailedScores.content || 75,
+        format: analysisData.detailedScores.format || 80,
+        keywords: analysisData.detailedScores.keywords || 70,
+        readability: analysisData.detailedScores.readability || 85
+      };
+    }
+
+    // Calcul basé sur les données disponibles du CV
     const baseScore = current.score || 75;
+    
+    // Score de contenu basé sur la présence d'informations
+    const contentScore = Math.min(
+      (current.strengths?.length || 0) * 15 + 
+      (current.skills?.length || 0) * 2 + 
+      (current.summary ? 20 : 0), 
+      100
+    );
+    
+    // Score de format basé sur la structure
+    const formatScore = Math.min(baseScore + 10, 100);
+    
+    // Score de mots-clés basé sur les compétences identifiées
+    const keywordsScore = Math.min((current.skills?.length || 0) * 5, 100);
+    
+    // Score de lisibilité basé sur le score global
+    const readabilityScore = Math.min(baseScore + 5, 100);
+
     return {
-      content: Math.min(Math.max(baseScore + Math.random() * 20 - 10, 0), 100),
-      format: Math.min(Math.max(baseScore + Math.random() * 15 - 7, 0), 100),
-      keywords: Math.min(Math.max(baseScore + Math.random() * 25 - 12, 0), 100),
-      readability: Math.min(Math.max(baseScore + Math.random() * 10 - 5, 0), 100)
+      content: Math.round(contentScore),
+      format: Math.round(formatScore),
+      keywords: Math.round(keywordsScore),
+      readability: Math.round(readabilityScore)
     };
   };
 

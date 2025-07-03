@@ -47,8 +47,8 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
   const { profile } = useAppSelector(state => state.profile);
   const { user } = useAppSelector(state => state.auth);
   const { templates, generatingLetter, sendingEmail } = useAppSelector(state => state.applications);
-  
-  
+
+
   const [step, setStep] = useState<'template' | 'customize' | 'review' | 'send' | 'ai-assist'>('template');
   const [selectedTemplate, setSelectedTemplate] = useState<ApplicationTemplate | null>(null);
   const [coverLetter, setCoverLetter] = useState('');
@@ -65,7 +65,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
       const defaultTemplate = templates.find(t => t.isDefault) || templates[0];
       setSelectedTemplate(defaultTemplate);
       setCompanyEmail(ApplicationService.extractCompanyEmail(job));
-      
+
       if (defaultTemplate) {
         setEmailSubject(ApplicationService.generateEmailSubject(job, profile, defaultTemplate));
       }
@@ -81,7 +81,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
     if (!selectedTemplate || !profile) return;
 
     dispatch(startGeneratingLetter());
-    
+
     try {
       const letter = await ApplicationService.generateCoverLetter(
         job, 
@@ -280,7 +280,7 @@ Compétences: ${profile.skills.map(s => s.name).join(', ')}`;
                       const Icon = stepItem.icon;
                       const isActive = step === stepItem.id;
                       const isCompleted = ['template', 'customize', 'review'].indexOf(step) > ['template', 'customize', 'review'].indexOf(stepItem.id);
-                      
+
                       return (
                         <div key={stepItem.id} className="flex items-center">
                           <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
@@ -389,7 +389,7 @@ Compétences: ${profile.skills.map(s => s.name).join(', ')}`;
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">
                               Personnaliser votre candidature
                             </h3>
-                            
+
                             <div className="space-y-4">
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -471,7 +471,7 @@ Compétences: ${profile.skills.map(s => s.name).join(', ')}`;
                                 <p className="text-sm text-gray-600">Objet: {emailSubject}</p>
                               </div>
                             </div>
-                            
+
                             <textarea
                               value={coverLetter}
                               onChange={(e) => setCoverLetter(e.target.value)}
@@ -532,7 +532,7 @@ Compétences: ${profile.skills.map(s => s.name).join(', ')}`;
                     >
                       Annuler
                     </button>
-                    
+
                     <div className="flex space-x-3">
                       {step !== 'template' && (
                         <button
@@ -546,7 +546,7 @@ Compétences: ${profile.skills.map(s => s.name).join(', ')}`;
                           Précédent
                         </button>
                       )}
-                      
+
                       {step === 'template' && (
                         <button
                           onClick={() => setStep('customize')}
@@ -556,7 +556,7 @@ Compétences: ${profile.skills.map(s => s.name).join(', ')}`;
                           Suivant
                         </button>
                       )}
-                      
+
                       {step === 'customize' && (
                         <button
                           onClick={handleGenerateLetter}
@@ -576,7 +576,7 @@ Compétences: ${profile.skills.map(s => s.name).join(', ')}`;
                           )}
                         </button>
                       )}
-                      
+
                       {step === 'review' && (
                         <button
                           onClick={handleSendApplication}

@@ -1046,6 +1046,46 @@ export class SupabaseService {
     return data.map(item => item.job_id);
   }
 
+  static async getSavedJobsWithDetails(userId: string): Promise<Job[]> {
+    const { data, error } = await supabase
+      .from('saved_jobs')
+      .select(`
+        jobs!inner (
+          id,
+          title,
+          company,
+          location,
+          type,
+          salary,
+          description,
+          requirements,
+          benefits,
+          posted_date,
+          source
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('jobs.is_active', true);
+
+    if (error) throw error;
+
+    return data.map(item => ({
+      id: item.jobs.id,
+      title: item.jobs.title,
+      company: item.jobs.company,
+      location: item.jobs.location,
+      type: item.jobs.type as Job['type'],
+      salary: item.jobs.salary,
+      description: item.jobs.description,
+      requirements: item.jobs.requirements || [],
+      benefits: item.jobs.benefits || [],
+      postedDate: item.jobs.posted_date,
+      source: item.jobs.source,
+      saved: true,
+      matchScore: undefined
+    }));
+  }
+
   static async saveJob(userId: string, jobId: string) {
     const { error } = await supabase
       .from('saved_jobs')

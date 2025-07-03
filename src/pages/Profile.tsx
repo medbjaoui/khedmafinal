@@ -436,9 +436,15 @@ const Profile: React.FC = () => {
       try {
         await SupabaseService.deleteFile('cvs', profile.cvFilePath);
         // Met à jour le profil côté backend (Supabase)
-        await SupabaseService.updateUserProfile(user.id, { cvFilePath: undefined });
+        await SupabaseService.updateUserProfile(user.id, { 
+          cvFilePath: undefined,
+          originalCVFileName: undefined 
+        });
         // Met à jour le store Redux
-        dispatch(updateProfile({ cvFilePath: undefined }));
+        dispatch(updateProfile({ 
+          cvFilePath: undefined,
+          originalCVFileName: undefined 
+        }));
         setSuccessMessage('CV supprimé avec succès !');
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
