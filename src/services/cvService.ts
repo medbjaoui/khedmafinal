@@ -364,6 +364,73 @@ export class CVService {
   }
 
   // Original method for backward compatibility
+  static async generateAnalysisReport(analysisData: any): Promise<string> {
+    let report = `Rapport d'Analyse de CV\n`;
+    report += `=========================\n\n`;
+    report += `Fichier: ${analysisData.fileName}\n`;
+    report += `Date d'analyse: ${new Date(analysisData.uploadDate).toLocaleString('fr-FR')}\n`;
+    report += `Score Global: ${analysisData.score}/100\n\n`;
+
+    if (analysisData.analysisData?.analysis?.standardCompliance) {
+      const compliance = analysisData.analysisData.analysis.standardCompliance;
+      report += `Conformité aux Normes\n`;
+      report += `---------------------\n`;
+      report += `Internationales: ${compliance.international.compliant ? 'Conforme' : 'Non conforme'}\n`;
+      report += `  Notes: ${compliance.international.notes}\n`;
+      report += `Canadiennes: ${compliance.canadian.compliant ? 'Conforme' : 'Non conforme'}\n`;
+      report += `  Notes: ${compliance.canadian.notes}\n\n`;
+    }
+
+    const strengths = analysisData.analysisData?.analysis?.strengths || analysisData.strengths || [];
+    if (strengths.length > 0) {
+      report += `Points Forts\n`;
+      report += `------------\n`;
+      strengths.forEach((s: string) => (report += `- ${s}\n`));
+      report += `\n`;
+    }
+
+    const suggestions = analysisData.analysisData?.analysis?.suggestions || analysisData.recommendations || [];
+    if (suggestions.length > 0) {
+      report += `Recommandations\n`;
+      report += `---------------\n`;
+      suggestions.forEach((rec: any) => {
+        if (typeof rec === 'string') {
+          report += `- ${rec}\n`;
+        } else {
+          report += `- [${rec.area}] ${rec.suggestion}\n`;
+        }
+      });
+      report += `\n`;
+    }
+
+    if (analysisData.skills?.length > 0) {
+      report += `Compétences Identifiées\n`;
+      report += `-----------------------\n`;
+      report += analysisData.skills.join(', ') + `\n\n`;
+    }
+
+    if (analysisData.summary) {
+      report += `Résumé\n`;
+      report += `------\n`;
+      report += `${analysisData.summary}\n`;
+    }
+
+    return report;
+  }
+
+  static downloadReport(content: string, fileName: string) {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  // Original method for backward compatibility
   static async uploadAndAnalyzeCV(userId: string, file: File): Promise<{ profile: UserProfile; analysis: any }> {
     try {
       // 1. Upload CV to Supabase Storage

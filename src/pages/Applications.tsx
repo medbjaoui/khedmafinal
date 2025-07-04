@@ -34,7 +34,7 @@ import {
   DropdownMenuTrigger 
 } from '../components/ui/dropdown-menu';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { setApplications, addApplication } from '../store/slices/applicationsSlice';
+import { setApplications, addApplication, startApplicationProcess } from '../store/slices/applicationsSlice';
 import { SupabaseService } from '../services/supabaseService';
 import ApplicationModal from '../components/Applications/ApplicationModal';
 import ApplicationDetailsModal from '../components/Applications/ApplicationDetailsModal';
@@ -436,7 +436,7 @@ const Applications: React.FC = () => {
         <ApplicationModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onSubmit={(newApplication) => {
+          onApplicationAdded={(newApplication) => {
             dispatch(addApplication(newApplication));
             setIsModalOpen(false);
           }}

@@ -33,21 +33,24 @@ import AIChat from '../AI/AIChat';
 interface ApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  job: Job;
+  job?: Job;
   existingApplication?: Application;
+  onApplicationAdded?: (newApplication: Application) => void;
 }
 
 const ApplicationModal: React.FC<ApplicationModalProps> = ({
   isOpen,
   onClose,
   job,
-  existingApplication
+  existingApplication,
+  onApplicationAdded
 }) => {
   const dispatch = useAppDispatch();
   const { profile } = useAppSelector(state => state.profile);
   const { user } = useAppSelector(state => state.auth);
   const { templates, generatingLetter, sendingEmail } = useAppSelector(state => state.applications);
 
+  const isManualAdd = !job;
 
   const [step, setStep] = useState<'template' | 'customize' | 'review' | 'send' | 'ai-assist'>('template');
   const [selectedTemplate, setSelectedTemplate] = useState<ApplicationTemplate | null>(null);
@@ -59,23 +62,32 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
   const [applicationType, setApplicationType] = useState<'manual' | 'automatic'>('manual');
   const [emailSent, setEmailSent] = useState(false);
   const [showAIAssist, setShowAIAssist] = useState(false);
+  const [manualJobTitle, setManualJobTitle] = useState('');
+  const [manualCompany, setManualCompany] = useState('');
 
   useEffect(() => {
-    if (isOpen && job && profile) {
+    if (isOpen && profile) {
       const defaultTemplate = templates.find(t => t.isDefault) || templates[0];
+      
+      setManualJobTitle(existingApplication?.jobTitle || '');
+      setManualCompany(existingApplication?.company || '');
+      setCoverLetter(existingApplication?.coverLetter || '');
       setSelectedTemplate(defaultTemplate);
-      setCompanyEmail(ApplicationService.extractCompanyEmail(job));
+      setCompanyEmail(existingApplication?.companyEmail || (job ? ApplicationService.extractCompanyEmail(job) : ''));
 
-      if (defaultTemplate) {
+      if (job && defaultTemplate) {
         setEmailSubject(ApplicationService.generateEmailSubject(job, profile, defaultTemplate));
+      } else {
+        setEmailSubject(existingApplication?.jobTitle ? `Candidature pour ${existingApplication.jobTitle}` : '');
       }
-
+      
       if (existingApplication) {
-        setCoverLetter(existingApplication.coverLetter);
         setStep('review');
+      } else {
+        setStep(isManualAdd ? 'customize' : 'template');
       }
     }
-  }, [isOpen, job, profile, templates, existingApplication]);
+  }, [isOpen, job, profile, templates, existingApplication, isManualAdd]);
 
   const handleGenerateLetter = async () => {
     if (!selectedTemplate || !profile) return;
@@ -100,12 +112,20 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
   const handleSendApplication = async () => {
     if (!profile || !user || (!coverLetter && !coverLetterFile)) return;
 
+    const jobTitle = isManualAdd ? manualJobTitle : job.title;
+    const company = isManualAdd ? manualCompany : job.company;
+
+    if (!jobTitle || !company) {
+      dispatch(emailSentFailure('Le titre du poste et le nom de l\'entreprise sont requis.'));
+      return;
+    }
+
     dispatch(startSendingEmail());
 
     let coverLetterFilePath: string | undefined;
     if (coverLetterFile) {
       try {
-        const filePath = `cover_letters/${user.id}/${job.id}/${coverLetterFile.name}`;
+        const filePath = `cover_letters/${user.id}/${job?.id || 'manual'}/${Date.now()}_${coverLetterFile.name}`;
         await SupabaseService.uploadFile('cover_letters', filePath, coverLetterFile);
         coverLetterFilePath = filePath;
       } catch (error: any) {
@@ -116,17 +136,17 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
 
     // 1. Create a draft application in the database
     const newApplicationData = {
-      jobId: job.id,
-      jobTitle: job.title,
-      company: job.company,
+      jobId: job?.id,
+      jobTitle,
+      company,
       status: 'draft' as const,
       type: applicationType as 'manual' | 'automatic',
       coverLetter: coverLetter || '',
       coverLetterFilePath,
       companyEmail,
       customMessage: customInstructions,
-      attachments: profile.cvFilePath ? [profile.cvFilePath] : [], // Use real CV path from profile
-      source: job.source,
+      attachments: profile.cvFilePath ? [profile.cvFilePath] : [],
+      source: job?.source || 'Manual',
       appliedDate: new Date().toISOString(),
       emailSent: false
     };
@@ -212,10 +232,10 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
   ];
 
   const aiContext = `Contexte de candidature:
-Poste: ${job.title}
-Entreprise: ${job.company}
-Description: ${job.description}
-Exigences: ${job.requirements.join(', ')}
+Poste: ${job?.title || manualJobTitle}
+Entreprise: ${job?.company || manualCompany}
+Description: ${job?.description || 'N/A'}
+Exigences: ${job?.requirements?.join(', ') || 'N/A'}
 
 Profil candidat:
 Nom: ${profile.firstName} ${profile.lastName}
@@ -245,7 +265,7 @@ Compétences: ${profile.skills.map(s => s.name).join(', ')}`;
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold">Postuler à l'offre</h2>
-                  <p className="text-blue-100">{job.title} - {job.company}</p>
+                  <p className="text-blue-100">{job ? `${job.title} - ${job.company}` : 'Nouvelle candidature manuelle'}</p>
                 </div>
                 <div className="flex items-center space-x-3">
                   <button
@@ -391,6 +411,37 @@ Compétences: ${profile.skills.map(s => s.name).join(', ')}`;
                             </h3>
 
                             <div className="space-y-4">
+                              {isManualAdd && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                      Titre du poste
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={manualJobTitle}
+                                      onChange={(e) => setManualJobTitle(e.target.value)}
+                                      placeholder="ex: Développeur React"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                      required
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                      Nom de l'entreprise
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={manualCompany}
+                                      onChange={(e) => setManualCompany(e.target.value)}
+                                      placeholder="ex: Acme Inc."
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                      required
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                   Email de l'entreprise

@@ -1,297 +1,134 @@
 import React, { useState } from 'react';
-import { Bell, Search, User, Menu, Settings, LogOut, ChevronDown, MessageSquare, Calendar, Briefcase } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { logoutUser } from '../../store/slices/authSlice';
-import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bell, Search, Menu, Settings, LogOut, User as UserIcon, Rocket } from 'lucide-react';
+
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Card, CardContent } from '../ui/card';
 import { NotificationCenter } from '../Notifications/NotificationCenter';
 
 interface HeaderProps {
   onMenuToggle: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  onMenuToggle
-}) => {
+const UserNav: React.FC = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { user } = useAppSelector(state => state.auth);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(logoutUser());
+    navigate('/login');
   };
 
-  const notifications = [
-    {
-      id: '1',
-      title: 'Nouvelle candidature',
-      message: 'Votre candidature chez TechCorp a été vue',
-      time: '5 min',
-      unread: true,
-      icon: Briefcase,
-      color: 'bg-blue-100 text-blue-600'
-    },
-    {
-      id: '2',
-      title: 'Entretien programmé',
-      message: 'Entretien chez Digital Solutions demain à 14h',
-      time: '1h',
-      unread: true,
-      icon: Calendar,
-      color: 'bg-green-100 text-green-600'
-    },
-    {
-      id: '3',
-      title: 'Profil mis à jour',
-      message: 'Votre profil a été synchronisé avec succès',
-      time: '2h',
-      unread: false,
-      icon: User,
-      color: 'bg-purple-100 text-purple-600'
-    },
-    {
-      id: '4',
-      title: 'Nouveau message',
-      message: 'Vous avez reçu une réponse de CloudTech',
-      time: '3h',
-      unread: false,
-      icon: MessageSquare,
-      color: 'bg-yellow-100 text-yellow-600'
-    }
-  ];
-
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    return names.map(n => n[0]).join('').toUpperCase();
+  };
 
   return (
-    <motion.header 
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo and Mobile Menu */}
-          <div className="flex items-center">
-            <button
-              onClick={onMenuToggle}
-              className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-            <div className="flex items-center ml-2 lg:ml-0">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-2 rounded-lg">
-                <Search className="h-6 w-6 text-white" />
-              </div>
-              <h1 className="ml-3 text-xl font-bold text-gray-900">
-                Khedma<span className="text-blue-600">Clair</span>
-              </h1>
-            </div>
-          </div>
-
-          {/* Search Bar - Hidden on mobile */}
-          <div className="hidden md:flex flex-1 max-w-lg mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="text"
-                placeholder="Rechercher un emploi, entreprise..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Mobile Search */}
-          <AnimatePresence>
-            {showSearch && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute left-0 right-0 top-16 bg-white p-4 border-b border-gray-200 shadow-md md:hidden z-50"
-              >
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <input
-                    type="text"
-                    placeholder="Rechercher un emploi, entreprise..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    autoFocus
-                  />
+    <div className="relative">
+      <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)} className="rounded-full h-9 w-9">
+        <div className="bg-primary/10 text-primary rounded-full h-9 w-9 flex items-center justify-center font-bold">
+          {user?.user_metadata?.full_name ? getInitials(user.user_metadata.full_name) : <UserIcon className="h-5 w-5" />}
+        </div>
+      </Button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute right-0 mt-2 w-56 origin-top-right"
+            onClick={() => setIsOpen(false)}
+          >
+            <Card className="shadow-2xl">
+              <CardContent className="p-2">
+                <div className="p-2">
+                  <p className="font-semibold text-sm text-foreground truncate">{user?.user_metadata?.full_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <div className="h-px bg-border my-1" />
+                <Link to="/profile" className="block w-full text-left">
+                  <Button variant="ghost" className="w-full justify-start">
+                    <UserIcon className="mr-2 h-4 w-4" /> Profil
+                  </Button>
+                </Link>
+                <Link to="/settings" className="block w-full text-left">
+                  <Button variant="ghost" className="w-full justify-start">
+                    <Settings className="mr-2 h-4 w-4" /> Paramètres
+                  </Button>
+                </Link>
+                <div className="h-px bg-border my-1" />
+                <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive" onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" /> Déconnexion
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
-          {/* Right side icons */}
-          <div className="flex items-center space-x-4">
-            {/* Mobile Search Button */}
-            <button 
-              className="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={() => setShowSearch(!showSearch)}
-            >
-              <Search className="h-6 w-6" />
-            </button>
 
-            {/* Notifications */}
-            <div className="relative">
-              
-              <NotificationCenter />
+const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
+  const [showNotifications, setShowNotifications] = useState(false);
 
-              {/* Notifications Dropdown */}
-              <AnimatePresence>
-                {showNotifications && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 top-12 w-80 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50"
-                  >
-                    <div className="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
-                      <h3 className="font-semibold text-gray-900">Notifications</h3>
-                      <span className="text-xs text-blue-600 font-medium cursor-pointer hover:text-blue-800">
-                        Tout marquer comme lu
-                      </span>
-                    </div>
-                    <div className="max-h-64 overflow-y-auto">
-                      {notifications.map((notification) => {
-                        const Icon = notification.icon;
-                        return (
-                          <div
-                            key={notification.id}
-                            className={`px-4 py-3 hover:bg-gray-50 cursor-pointer ${
-                              notification.unread ? 'bg-blue-50' : ''
-                            }`}
-                          >
-                            <div className="flex items-start space-x-3">
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${notification.color}`}>
-                                <Icon className="h-4 w-4" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex justify-between">
-                                  <p className="text-sm font-medium text-gray-900">
-                                    {notification.title}
-                                  </p>
-                                  <span className="text-xs text-gray-500 ml-2">
-                                    {notification.time}
-                                  </span>
-                                </div>
-                                <p className="text-sm text-gray-600 mt-1">
-                                  {notification.message}
-                                </p>
-                              </div>
-                            </div>
-                            {notification.unread && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 ml-11"></div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="px-4 py-2 border-t border-gray-100">
-                      <button className="text-sm text-blue-600 hover:text-blue-700 transition-colors w-full text-center">
-                        Voir toutes les notifications
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+  return (
+    <header className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-sm border-b">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuToggle}>
+            <Menu className="h-5 w-5" />
+          </Button>
+          <Link to="/" className="flex items-center space-x-2">
+            <Rocket className="h-6 w-6 text-primary" />
+            <span className="text-xl font-bold text-foreground hidden sm:inline-block">KhedmaClair</span>
+          </Link>
+        </div>
 
-            {/* User Profile Menu */}
-            <div className="relative">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setShowProfileMenu(!showProfileMenu);
-                  setShowNotifications(false);
-                }}
-                className="flex items-center space-x-2 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
-                  {user ? (
-                    <span className="text-blue-700 font-semibold text-sm">
-                      {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-                    </span>
-                  ) : (
-                    <User className="h-5 w-5 text-blue-600" />
-                  )}
-                </div>
-                <div className="hidden sm:block text-left">
-                  <p className="text-sm font-medium">
-                    {user ? `${user.firstName} ${user.lastName}` : 'Profil'}
-                  </p>
-                  <p className="text-xs text-gray-500">{user?.role}</p>
-                </div>
-                <ChevronDown className="h-4 w-4" />
-              </motion.button>
-
-              {/* Profile Dropdown */}
-              <AnimatePresence>
-                {showProfileMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 top-12 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50"
-                  >
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="font-medium text-gray-900">
-                        {user?.firstName} {user?.lastName}
-                      </p>
-                      <p className="text-sm text-gray-600">{user?.email}</p>
-                    </div>
-
-                    <div className="py-1">
-                      <Link 
-                        to="/profile"
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
-                        onClick={() => setShowProfileMenu(false)}
-                      >
-                        <User className="h-4 w-4" />
-                        <span>Mon Profil</span>
-                      </Link>
-                      <Link 
-                        to="/settings"
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
-                        onClick={() => setShowProfileMenu(false)}
-                      >
-                        <Settings className="h-4 w-4" />
-                        <span>Paramètres</span>
-                      </Link>
-                    </div>
-
-                    <div className="border-t border-gray-100 py-1">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        <span>Se déconnecter</span>
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+        <div className="flex-1 flex justify-center px-4 lg:px-8">
+          <div className="w-full max-w-md relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher un emploi, une compétence..."
+              className="pl-10 w-full bg-muted/50 focus:bg-background"
+            />
           </div>
         </div>
-      </div>
 
-      {/* Click outside to close dropdowns */}
-      {(showProfileMenu || showNotifications || showSearch) && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => {
-            setShowProfileMenu(false);
-            setShowNotifications(false);
-            setShowSearch(false);
-          }}
-        />
-      )}
-    </motion.header>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Button variant="ghost" size="icon" onClick={() => setShowNotifications(!showNotifications)}>
+              <Bell className="h-5 w-5" />
+            </Button>
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  className="absolute right-0 mt-2 w-80 md:w-96 origin-top-right"
+                >
+                  <NotificationCenter onClose={() => setShowNotifications(false)} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <UserNav />
+        </div>
+      </div>
+    </header>
   );
 };
 

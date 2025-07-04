@@ -4,13 +4,13 @@ import {
   Briefcase, 
   Send, 
   TrendingUp, 
+  TrendingDown,
   MapPin,
   Star,
   Clock,
   Target,
   User,
   Activity,
-  Eye,
   ChevronRight,
   Search,
   BookOpen,
@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '../components/ui/card';
+import { Card, CardHeader, CardContent, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 
@@ -76,49 +76,66 @@ function getTypeColor(type: string) {
   }
 }
 
-// Component pour les cartes de statistiques améliorées
-const StatCard = ({ title, value, change, changeType, icon: Icon, color, gradient }: any) => (
-  <motion.div
-    whileHover={{ y: -8, scale: 1.02 }}
-    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-    className="group relative overflow-hidden"
-  >
-    <div className={`absolute inset-0 ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl`}></div>
-    <div className="relative bg-white/80 backdrop-blur-sm p-7 rounded-2xl border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-4 rounded-2xl ${
-          color === 'blue' ? 'bg-gradient-to-br from-blue-500 to-blue-600' :
-          color === 'green' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' :
-          color === 'orange' ? 'bg-gradient-to-br from-orange-500 to-orange-600' :
-          color === 'purple' ? 'bg-gradient-to-br from-purple-500 to-purple-600' : 'bg-gradient-to-br from-gray-500 to-gray-600'
-        } shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
-          <Icon className="h-7 w-7 text-white" />
+// Component pour les cartes de statistiques (nouveau design)
+const StatCard = ({ title, value, change, changeType, icon: Icon, color }: { title: string, value: string | number, change?: string, changeType?: 'positive' | 'negative', icon: React.ElementType, color: string }) => {
+  const colorClasses: { [key: string]: string } = {
+    blue: 'text-blue-600 bg-blue-100',
+    green: 'text-emerald-600 bg-emerald-100',
+    orange: 'text-orange-600 bg-orange-100',
+    purple: 'text-purple-600 bg-purple-100',
+  };
+
+  const trend: { [key: string]: { Icon: React.ElementType, color: string } } = {
+    positive: {
+      Icon: TrendingUp,
+      color: 'text-emerald-600',
+    },
+    negative: {
+      Icon: TrendingDown,
+      color: 'text-red-600',
+    }
+  };
+
+  const TrendIcon = changeType ? trend[changeType].Icon : null;
+
+  return (
+    <Card className="transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-gray-500">{title}</CardTitle>
+        <div className={`p-2.5 rounded-lg ${colorClasses[color] || 'text-gray-600 bg-gray-100'}`}>
+          <Icon className="h-5 w-5" />
         </div>
-        <div className="text-right">
-          <p className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-            {value}
-          </p>
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <p className="text-sm font-semibold text-gray-700 uppercase tracking-wider">{title}</p>
+      </CardHeader>
+      <CardContent>
+        <div className="text-3xl font-bold text-gray-800">{value}</div>
         {change && (
-          <div className="flex items-center space-x-2">
-            <div className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-              changeType === 'positive' ? 'bg-emerald-100 text-emerald-700' : 
-              changeType === 'negative' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
-            }`}>
-              <TrendingUp className={`h-3 w-3 mr-1 ${
-                changeType === 'negative' ? 'rotate-180' : ''
-              }`} />
+          (changeType && TrendIcon) ? (
+            <div className={`text-xs mt-1 flex items-center ${trend[changeType].color}`}>
+              <TrendIcon className="h-4 w-4 mr-1" />
               <span>{change}</span>
             </div>
-          </div>
+          ) : (
+            <p className="text-xs text-gray-500 mt-1">{change}</p>
+          )
         )}
+      </CardContent>
+    </Card>
+  );
+};
+
+const SectionHeader = ({ icon: Icon, title, description, action, iconColor }: { icon: React.ElementType, title: string, description: string, action?: React.ReactNode, iconColor?: string }) => (
+  <div className="flex justify-between items-center mb-6">
+    <div className="flex items-center space-x-4">
+      <div className={`p-3 rounded-xl shadow-sm bg-white`}>
+        <Icon className={`h-6 w-6 ${iconColor || 'text-indigo-600'}`} />
+      </div>
+      <div>
+        <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+        <p className="text-sm text-gray-500">{description}</p>
       </div>
     </div>
-  </motion.div>
+    {action}
+  </div>
 );
 
 const Dashboard: React.FC = () => {
@@ -379,7 +396,6 @@ const Dashboard: React.FC = () => {
             changeType="positive"
             icon={Send}
             color="blue"
-            gradient="bg-gradient-to-br from-blue-500/10 to-blue-600/10"
           />
           <StatCard
             title="Offres sauvegardées"
@@ -388,16 +404,14 @@ const Dashboard: React.FC = () => {
             changeType="positive"
             icon={Star}
             color="orange"
-            gradient="bg-gradient-to-br from-orange-500/10 to-orange-600/10"
           />
           <StatCard
             title="Profil complété"
             value={`${userStats.profileCompletion}%`}
             change={userStats.profileCompletion < 100 ? "À finaliser" : "Complet"}
-            changeType={userStats.profileCompletion < 100 ? "neutral" : "positive"}
+            changeType={userStats.profileCompletion < 100 ? undefined : "positive"}
             icon={Target}
             color="green"
-            gradient="bg-gradient-to-br from-emerald-500/10 to-emerald-600/10"
           />
           <StatCard
             title="Nouvelles opportunités"
@@ -406,7 +420,6 @@ const Dashboard: React.FC = () => {
             changeType="positive"
             icon={Zap}
             color="purple"
-            gradient="bg-gradient-to-br from-purple-500/10 to-purple-600/10"
           />
         </motion.div>
 
@@ -419,26 +432,22 @@ const Dashboard: React.FC = () => {
             transition={{ delay: 0.3 }}
             className="lg:col-span-2"
           >
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
-              <div className="flex justify-between items-center mb-8">
-                <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg">
-                    <Briefcase className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Offres recommandées</h2>
-                    <p className="text-gray-600 mt-1">Sélectionnées spécialement pour vous</p>
-                  </div>
-                </div>
-                <Button 
-                  onClick={() => navigate('/jobs')}
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group"
-                >
-                  <Eye className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                  Voir tout
-                  <ArrowUpRight className="h-4 w-4 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                </Button>
-              </div>
+            <Card className="p-8 bg-white/70 backdrop-blur-sm border-white/20">
+              <SectionHeader
+                icon={Briefcase}
+                title="Offres recommandées"
+                description="Sélectionnées spécialement pour vous"
+                action={
+                  <Button 
+                    onClick={() => navigate('/jobs')}
+                    variant="outline"
+                    className="group"
+                  >
+                    Voir tout
+                    <ArrowUpRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                }
+              />
               
               <div className="space-y-4">
                 <AnimatePresence>
@@ -508,7 +517,7 @@ const Dashboard: React.FC = () => {
                   </Button>
                 </motion.div>
               )}
-            </div>
+            </Card>
           </motion.div>
 
           {/* Sidebar */}
@@ -519,16 +528,13 @@ const Dashboard: React.FC = () => {
             className="space-y-6"
           >
             {/* Recent Activity */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg">
-                  <Activity className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg text-gray-900">Activité récente</h3>
-                  <p className="text-gray-600 text-sm">Vos dernières actions</p>
-                </div>
-              </div>
+            <Card className="p-6 bg-white/70 backdrop-blur-sm border-white/20">
+              <SectionHeader
+                icon={Activity}
+                iconColor="text-emerald-600"
+                title="Activité récente"
+                description="Vos dernières actions"
+              />
               
               <div className="space-y-3">
                 {recentApplications.map((app: any, index) => (
@@ -568,19 +574,16 @@ const Dashboard: React.FC = () => {
               >
                 Voir toutes mes candidatures
               </Button>
-            </div>
+            </Card>
 
             {/* Tips & Recommendations */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
-                  <Sparkles className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg text-gray-900">Conseils personnalisés</h3>
-                  <p className="text-gray-600 text-sm">Pour booster votre profil</p>
-                </div>
-              </div>
+            <Card className="p-6 bg-white/70 backdrop-blur-sm border-white/20">
+              <SectionHeader
+                icon={Sparkles}
+                iconColor="text-blue-600"
+                title="Conseils personnalisés"
+                description="Pour booster votre profil"
+              />
               
               <div className="space-y-3">
                 {userRecommendations?.slice(0, 3).map((rec: any, index) => (
@@ -656,7 +659,7 @@ const Dashboard: React.FC = () => {
                 <User className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
                 Améliorer mon profil
               </Button>
-            </div>
+            </Card>
           </motion.div>
         </div>
       </div>

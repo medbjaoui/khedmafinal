@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
+
 import { 
   User, 
   Upload, 
@@ -16,11 +17,7 @@ import {
   Briefcase,
   GraduationCap,
   Award,
-  Globe,
-  Github,
-  Linkedin,
   ExternalLink,
-  Camera,
   Check,
   AlertCircle,
   ChevronRight,
@@ -29,23 +26,31 @@ import {
   FileText,
   Download,
   TrendingUp,
-  CheckCircle,
-  Star,
-  Eye,
-  Zap,
-  Shield,
-  Sparkles,
-  Settings
+  CheckCircle
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
-import { updateProfile, addExperience, addEducation, addSkill, addCertification, removeExperience, removeEducation, removeSkill, removeCertification, fetchProfileStart, fetchProfileSuccess, fetchProfileFailure } from '../store/slices/profileSlice';
+import { Experience, Education, Certification, addExperience, removeExperience, addEducation, removeEducation, addSkill, removeSkill, addCertification, removeCertification, updateProfile, fetchProfileStart, fetchProfileSuccess, fetchProfileFailure } from '../store/slices/profileSlice';
 import { SupabaseService } from '../services/supabaseService';
 import CVUploadZone from '../components/Profile/CVUploadZone';
 import CoverLettersManagement from '../components/Profile/CoverLettersManagement';
+import ProfileHeader from '../components/Profile/ProfileHeader';
+import AboutSection from '../components/Profile/AboutSection';
+import ExperienceSection from '../components/Profile/ExperienceSection';
+import EducationSection from '../components/Profile/EducationSection';
+import SkillsSection from '../components/Profile/SkillsSection';
+import LanguagesSection from '../components/Profile/LanguagesSection';
+import CertificationsSection from '../components/Profile/CertificationsSection';
+import EditPersonalForm from '../components/Profile/forms/EditPersonalForm';
+import EditLinksForm from '../components/Profile/forms/EditLinksForm';
+import EditExperienceForm from '../components/Profile/forms/EditExperienceForm';
+import EditEducationForm from '../components/Profile/forms/EditEducationForm';
+import EditSkillsForm from '../components/Profile/forms/EditSkillsForm';
+import EditCertificationsForm from '../components/Profile/forms/EditCertificationsForm';
 import { useRecommendations } from '../hooks/useRecommendations';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const Profile: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -185,58 +190,14 @@ const Profile: React.FC = () => {
     { id: 'recommendations', label: 'Recommandations', icon: Target },
   ];
 
-  const handleInputChange = (field: string, value: string | number | boolean) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
   };
 
-  const handleNestedInputChange = (section: string, field: string, value: string | boolean) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      [section]: {
-        ...prev[section as keyof typeof prev] as Record<string, unknown>,
-        [field]: value
-      }
-    }));
-  };
 
-  const handleAchievementChange = (index: number, value: string) => {
-    const achievements = [...(formData.newExperience.achievements || [''])];
-    achievements[index] = value;
-    
-    setFormData((prev: any) => ({
-      ...prev,
-      newExperience: {
-        ...prev.newExperience,
-        achievements
-      }
-    }));
-  };
 
-  const addAchievementField = () => {
-    setFormData((prev: any) => ({
-      ...prev,
-      newExperience: {
-        ...prev.newExperience,
-        achievements: [...prev.newExperience.achievements, '']
-      }
-    }));
-  };
 
-  const removeAchievementField = (index: number) => {
-    const achievements = [...formData.newExperience.achievements];
-    achievements.splice(index, 1);
-    
-    setFormData((prev: any) => ({
-      ...prev,
-      newExperience: {
-        ...prev.newExperience,
-        achievements
-      }
-    }));
-  };
 
   const handleSaveSection = (section: string) => {
     if (section === 'personal') {
@@ -264,108 +225,43 @@ const Profile: React.FC = () => {
     setTimeout(() => setShowSuccess(false), 3000);
   };
 
-  const handleAddExperience = () => {
-    if (formData.newExperience.company && formData.newExperience.position) {
-      dispatch(addExperience({
-        id: Date.now().toString(),
-        ...formData.newExperience,
-        achievements: formData.newExperience.achievements.filter((a: string) => a.trim())
-      }));
-      
-      setFormData((prev: any) => ({
-        ...prev,
-        newExperience: {
-          company: '',
-          position: '',
-          startDate: '',
-          endDate: '',
-          current: false,
-          description: '',
-          location: '',
-          achievements: ['']
-        }
-      }));
-      
-      setEditingSection(null);
-      setSuccessMessage('Expérience ajoutée avec succès !');
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
-    }
+  const handleAddExperience = (experience: Omit<Experience, 'id'>) => {
+    if (!profile) return;
+    const newExp = { ...experience, id: Date.now().toString(), achievements: experience.achievements.filter(a => a.trim()) };
+    dispatch(addExperience(newExp));
+    setEditingSection(null);
+    setSuccessMessage('Expérience ajoutée avec succès !');
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
   };
 
-  const handleAddEducation = () => {
-    if (formData.newEducation.institution && formData.newEducation.degree) {
-      dispatch(addEducation({
-        id: Date.now().toString(),
-        ...formData.newEducation
-      }));
-      
-      setFormData((prev: any) => ({
-        ...prev,
-        newEducation: {
-          institution: '',
-          degree: '',
-          field: '',
-          startDate: '',
-          endDate: '',
-          current: false,
-          description: ''
-        }
-      }));
-      
-      setEditingSection(null);
-      setSuccessMessage('Formation ajoutée avec succès !');
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
-    }
+  const handleAddEducation = (education: Omit<Education, 'id'>) => {
+    if (!profile) return;
+    dispatch(addEducation({ ...education, id: Date.now().toString() }));
+    setEditingSection(null);
+    setSuccessMessage('Formation ajoutée avec succès !');
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
   };
 
-  const handleAddSkill = () => {
-    if (formData.newSkill.name) {
-      dispatch(addSkill({
-        ...formData.newSkill,
-        verified: false
-      }));
-      
-      setFormData((prev: any) => ({
-        ...prev,
-        newSkill: {
-          name: '',
-          level: 'Intermédiaire',
-          category: 'Technique'
-        }
-      }));
-      
-      setEditingSection(null);
-      setSuccessMessage('Compétence ajoutée avec succès !');
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
-    }
+  const handleAddSkill = (skillName: string) => {
+    dispatch(addSkill({
+      name: skillName,
+      level: 'Intermédiaire',
+      category: 'Technique', // Default category
+      verified: false
+    }));
+    setSuccessMessage('Compétence ajoutée avec succès !');
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
   };
 
-  const handleAddCertification = () => {
-    if (formData.newCertification.name && formData.newCertification.issuer) {
-      dispatch(addCertification({
-        id: Date.now().toString(),
-        ...formData.newCertification
-      }));
-      
-      setFormData((prev: any) => ({
-        ...prev,
-        newCertification: {
-          name: '',
-          issuer: '',
-          issueDate: '',
-          expiryDate: '',
-          credentialId: ''
-        }
-      }));
-      
-      setEditingSection(null);
-      setSuccessMessage('Certification ajoutée avec succès !');
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
-    }
+  const handleAddCertification = (certification: Omit<Certification, 'id'>) => {
+    dispatch(addCertification({ ...certification, id: Date.now().toString() }));
+    setEditingSection(null);
+    setSuccessMessage('Certification ajoutée avec succès !');
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
   };
 
   const handleRemoveExperience = (id: string) => {
@@ -487,220 +383,16 @@ const Profile: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Header Premium */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 rounded-2xl overflow-hidden shadow-2xl"
-      >
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.3),transparent_50%)]"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-500/20 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-500/20 to-transparent rounded-full blur-3xl"></div>
-        
-        <div className="relative px-8 py-10">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-6">
-              {/* Avatar avec effet premium */}
-              <div className="relative">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-600 rounded-2xl flex items-center justify-center relative group cursor-pointer transform transition-all duration-300 hover:scale-105 shadow-xl">
-                  <User className="h-12 w-12 text-white" />
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Camera className="h-6 w-6 text-white" />
-                  </div>
-                  {/* Status indicator */}
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                </div>
-                {/* Completion ring */}
-                <div className="absolute inset-0 w-24 h-24">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="45"
-                      stroke="rgba(255,255,255,0.2)"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="45"
-                      stroke="url(#gradient)"
-                      strokeWidth="2"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeDasharray={`${profileCompletion.overall * 2.83} 283`}
-                      className="transition-all duration-500"
-                    />
-                    <defs>
-                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#3B82F6" />
-                        <stop offset="100%" stopColor="#8B5CF6" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-              
-              <div className="text-white">
-                <div className="flex items-center space-x-3 mb-2">
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                    {profile?.firstName || 'Prénom'} {profile?.lastName || 'Nom'}
-                  </h1>
-                  {profileCompletion.overall >= 80 && (
-                    <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-400 to-orange-500 px-2 py-1 rounded-full">
-                      <Star className="h-3 w-3 text-white" />
-                      <span className="text-xs font-semibold text-white">Profil Premium</span>
-                    </div>
-                  )}
-                </div>
-                
-                <p className="text-xl text-blue-100 mb-4 font-medium">
-                  {profile?.title || 'Titre professionnel'}
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div className="flex items-center space-x-2 bg-white/10 rounded-lg px-3 py-2 backdrop-blur-sm">
-                    <MapPin className="h-4 w-4 text-blue-300" />
-                    <span className="text-blue-100">{profile?.location || 'Non spécifié'}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-white/10 rounded-lg px-3 py-2 backdrop-blur-sm">
-                    <Mail className="h-4 w-4 text-blue-300" />
-                    <span className="text-blue-100">{profile?.email || 'Email non renseigné'}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-white/10 rounded-lg px-3 py-2 backdrop-blur-sm">
-                    <Eye className="h-4 w-4 text-blue-300" />
-                    <span className="text-blue-100">Profil {profileCompletion.overall >= 80 ? 'Excellent' : 'En cours'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <button 
-                onClick={() => {
-                  setActiveTab('edit');
-                  setEditingSection('personal');
-                  navigate('/profile?tab=edit');
-                }}
-                className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-              >
-                <Edit3 className="h-4 w-4" />
-                <span className="font-medium">Modifier</span>
-              </button>
-              
-              <button className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 text-white px-4 py-3 rounded-xl transition-all duration-300 backdrop-blur-sm">
-                <Settings className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        </div>
+      <ProfileHeader
+        profile={profile}
+        user={user}
+        profileCompletion={profileCompletion.overall}
+        onEdit={() => setActiveTab('edit')}
+        onDownloadCV={handleDownloadCV}
+        onManageCoverLetters={() => setActiveTab('cover-letters')}
+      />
 
-        {/* Complétude avec design premium */}
-        <div className="relative px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-t border-white/20">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Progression du profil</h3>
-                <p className="text-sm text-gray-600">Votre profil à {profileCompletion.overall}% de complétude</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <div className={`px-4 py-2 rounded-full text-sm font-medium ${
-                profileCompletion.overall >= 80 ? 'bg-green-100 text-green-800' :
-                profileCompletion.overall >= 60 ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
-              }`}>
-                {profileCompletion.overall >= 80 ? '🌟 Excellent' :
-                 profileCompletion.overall >= 60 ? '⚡ Bon' : '🚀 À améliorer'}
-              </div>
-              <span className={`text-2xl font-bold ${
-                profileCompletion.overall >= 80 ? 'text-green-600' :
-                profileCompletion.overall >= 60 ? 'text-yellow-600' :
-                'text-red-600'
-              }`}>
-                {profileCompletion.overall}%
-              </span>
-            </div>
-          </div>
-          
-          {/* Barre de progression premium */}
-          <div className="relative w-full h-4 bg-gray-200 rounded-full mb-6 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-300 to-gray-200 rounded-full"></div>
-            <motion.div 
-              className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full relative overflow-hidden"
-              style={{ width: `${profileCompletion.overall}%` }}
-              initial={{ width: 0 }}
-              animate={{ width: `${profileCompletion.overall}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"></div>
-              <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-            </motion.div>
-          </div>
 
-          {/* Sections avec design cards */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {Object.entries(profileCompletion.sections).map(([section, score], index) => (
-              <motion.div
-                key={section}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="relative bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
-              >
-                <div className="flex flex-col items-center">
-                  <div className="relative mb-3">
-                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                      <div className={`text-lg font-bold ${
-                        score >= 80 ? 'text-green-600' :
-                        score >= 60 ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {score}%
-                      </div>
-                    </div>
-                    {score >= 80 && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                        <Check className="h-3 w-3 text-white" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-gray-900 capitalize mb-1">
-                      {section === 'personal' ? 'Personnel' :
-                       section === 'professional' ? 'Professionnel' :
-                       section === 'experience' ? 'Expérience' :
-                       section === 'education' ? 'Formation' : 'Compétences'}
-                    </div>
-                    <div className={`w-full h-1 rounded-full ${
-                      score >= 80 ? 'bg-green-200' :
-                      score >= 60 ? 'bg-yellow-200' :
-                      'bg-red-200'
-                    }`}>
-                      <div 
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          score >= 80 ? 'bg-green-500' :
-                          score >= 60 ? 'bg-yellow-500' :
-                          'bg-red-500'
-                        }`}
-                        style={{ width: `${score}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.div>
 
       {/* Tabs */}
       <motion.div
@@ -742,17 +434,6 @@ const Profile: React.FC = () => {
       >
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Profile Summary */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Résumé professionnel</h3>
-              <p className="text-gray-700 leading-relaxed">{profile?.summary || 'Aucun résumé professionnel. Ajoutez un résumé pour améliorer votre profil.'}</p>
-            </motion.div>
-
             {/* CV Status */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -818,490 +499,48 @@ const Profile: React.FC = () => {
                     <FileText className="h-5 w-5 text-gray-400" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">Aucun CV uploadé</p>
-                    <p className="text-sm text-gray-600">
-                      Ajoutez votre CV pour améliorer votre profil
-                    </p>
+                    <p className="font-medium text-gray-900">Aucun CV importé</p>
+                    <p className="text-sm text-gray-600">Importez votre CV pour postuler plus rapidement.</p>
                   </div>
                 </div>
               )}
             </motion.div>
 
-            {/* Contact & Links */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-              >
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations de contact</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-700">{profile?.phone || 'Non spécifié'}</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-700">{profile?.email}</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <MapPin className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-700">{profile?.location || 'Non spécifié'}</span>
-                  </div>
-                  {profile?.dateOfBirth && (
-                    <div className="flex items-center space-x-3">
-                      <Calendar className="h-5 w-5 text-gray-400" />
-                      <span className="text-gray-700">
-                        {format(new Date(profile.dateOfBirth), 'dd MMMM yyyy', { locale: fr })}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-              >
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Liens professionnels</h3>
-                <div className="space-y-3">
-                  {profile?.linkedin ? (
-                    <a
-                      href={profile.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-3 text-blue-600 hover:text-blue-700 transition-colors"
-                    >
-                      <Linkedin className="h-5 w-5" />
-                      <span>LinkedIn</span>
-                      <ExternalLink className="h-4 w-4 ml-auto" />
-                    </a>
-                  ) : (
-                    <div className="flex items-center space-x-3 text-gray-400">
-                      <Linkedin className="h-5 w-5" />
-                      <span>LinkedIn non spécifié</span>
-                    </div>
-                  )}
-                  
-                  {profile?.github ? (
-                    <a
-                      href={profile.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-3 text-gray-700 hover:text-gray-900 transition-colors"
-                    >
-                      <Github className="h-5 w-5" />
-                      <span>GitHub</span>
-                      <ExternalLink className="h-4 w-4 ml-auto" />
-                    </a>
-                  ) : (
-                    <div className="flex items-center space-x-3 text-gray-400">
-                      <Github className="h-5 w-5" />
-                      <span>GitHub non spécifié</span>
-                    </div>
-                  )}
-                  
-                  {profile?.website ? (
-                    <a
-                      href={profile.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-3 text-purple-600 hover:text-purple-700 transition-colors"
-                    >
-                      <Globe className="h-5 w-5" />
-                      <span>Site web</span>
-                      <ExternalLink className="h-4 w-4 ml-auto" />
-                    </a>
-                  ) : (
-                    <div className="flex items-center space-x-3 text-gray-400">
-                      <Globe className="h-5 w-5" />
-                      <span>Site web non spécifié</span>
-                    </div>
-                  )}
-                  
-                  {profile?.portfolio ? (
-                    <a
-                      href={profile.portfolio}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-3 text-green-600 hover:text-green-700 transition-colors"
-                    >
-                      <Briefcase className="h-5 w-5" />
-                      <span>Portfolio</span>
-                      <ExternalLink className="h-4 w-4 ml-auto" />
-                    </a>
-                  ) : (
-                    <div className="flex items-center space-x-3 text-gray-400">
-                      <Briefcase className="h-5 w-5" />
-                      <span>Portfolio non spécifié</span>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
+            {/* Main content grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+              <div className="lg:col-span-1 flex flex-col gap-8">
+                <AboutSection 
+                  profile={profile} 
+                  onEdit={() => { setActiveTab('edit'); setEditingSection('personal'); }} 
+                />
+                <SkillsSection 
+                  skills={profile?.skills || []} 
+                  onAdd={() => { setActiveTab('edit'); setEditingSection('skills'); }} 
+                  onRemove={handleRemoveSkill} 
+                />
+              </div>
+              <div className="lg:col-span-2 flex flex-col gap-8">
+                <ExperienceSection 
+                  experiences={profile?.experiences || []} 
+                  onAdd={() => { setActiveTab('edit'); setEditingSection('experience-new'); }} 
+                  onEdit={(id) => { setActiveTab('edit'); setEditingSection(id); }} 
+                />
+                <EducationSection 
+                  education={profile?.education || []} 
+                  onAdd={() => { setActiveTab('edit'); setEditingSection('education-new'); }} 
+                  onEdit={(id) => { setActiveTab('edit'); setEditingSection(id); }} 
+                />
+                <CertificationsSection 
+                  certifications={profile?.certifications || []} 
+                  onAdd={() => { setActiveTab('edit'); setEditingSection('certification-new'); }} 
+                  onEdit={(id) => { setActiveTab('edit'); setEditingSection(id); }} 
+                />
+                <LanguagesSection 
+                  languages={profile?.languages || []} 
+                  onAdd={() => { setActiveTab('edit'); setEditingSection('languages'); }} 
+                />
+              </div>
             </div>
-
-            {/* Experiences */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Expériences professionnelles</h3>
-                <button
-                  onClick={() => {
-                    setActiveTab('edit');
-                    setEditingSection('experience');
-                    navigate('/profile?tab=edit');
-                  }}
-                  className="text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Ajouter</span>
-                </button>
-              </div>
-
-              {(profile?.experiences?.length || 0) > 0 ? (
-                <div className="space-y-6">
-                  {profile?.experiences?.map((exp) => (
-                    <div key={exp.id} className="border border-gray-200 rounded-lg p-5 hover:border-blue-200 hover:shadow-sm transition-all">
-                      <div className="flex justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 text-lg">{exp.position}</h4>
-                          <p className="text-blue-600 font-medium">{exp.company}</p>
-                          <div className="flex items-center space-x-3 text-sm text-gray-600 mt-1">
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="h-4 w-4" />
-                              <span>
-                                {format(new Date(exp.startDate), 'MMM yyyy', { locale: fr })} - 
-                                {exp.current ? ' Présent' : format(new Date(exp.endDate!), ' MMM yyyy', { locale: fr })}
-                              </span>
-                            </div>
-                            {exp.location && (
-                              <div className="flex items-center space-x-1">
-                                <MapPin className="h-4 w-4" />
-                                <span>{exp.location}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setActiveTab('edit');
-                            setEditingSection('experience');
-                            navigate('/profile?tab=edit');
-                          }}
-                          className="text-gray-400 hover:text-blue-600 transition-colors"
-                        >
-                          <Edit3 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      
-                      {exp.description && (
-                        <p className="text-gray-700 mt-3 mb-3">{exp.description}</p>
-                      )}
-                      
-                      {exp.achievements && exp.achievements.length > 0 && (
-                        <div className="mt-3">
-                          <p className="font-medium text-gray-900 mb-2">Réalisations clés :</p>
-                          <ul className="space-y-1">
-                            {exp.achievements.map((achievement, index) => (
-                              <li key={index} className="flex items-start space-x-2">
-                                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2"></div>
-                                <span className="text-gray-700">{achievement}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 border border-dashed border-gray-300 rounded-lg">
-                  <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600 mb-3">Aucune expérience professionnelle</p>
-                  <button
-                    onClick={() => {
-                      setActiveTab('edit');
-                      setEditingSection('experience');
-                      navigate('/profile?tab=edit');
-                    }}
-                    className="text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1 mx-auto"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Ajouter une expérience</span>
-                  </button>
-                </div>
-              )}
-            </motion.div>
-
-            {/* Education */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Formation</h3>
-                <button
-                  onClick={() => {
-                    setActiveTab('edit');
-                    setEditingSection('education');
-                    navigate('/profile?tab=edit');
-                  }}
-                  className="text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Ajouter</span>
-                </button>
-              </div>
-
-              {(profile?.education?.length || 0) > 0 ? (
-                <div className="space-y-6">
-                  {profile?.education?.map((edu) => (
-                    <div key={edu.id} className="border border-gray-200 rounded-lg p-5 hover:border-blue-200 hover:shadow-sm transition-all">
-                      <div className="flex justify-between">
-                        <div>
-                          <h4 className="font-semibold text-gray-900 text-lg">{edu.degree}</h4>
-                          <p className="text-blue-600 font-medium">{edu.institution}</p>
-                          <p className="text-gray-700 mt-1">{edu.field}</p>
-                          <div className="flex items-center space-x-1 text-sm text-gray-600 mt-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>
-                              {format(new Date(edu.startDate), 'yyyy', { locale: fr })} - 
-                              {edu.current ? ' En cours' : format(new Date(edu.endDate!), ' yyyy', { locale: fr })}
-                            </span>
-                          </div>
-                          {edu.grade && (
-                            <p className="text-sm text-gray-600 mt-1">
-                              <span className="font-medium">Mention :</span> {edu.grade}
-                            </p>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => {
-                            setActiveTab('edit');
-                            setEditingSection('education');
-                            navigate('/profile?tab=edit');
-                          }}
-                          className="text-gray-400 hover:text-blue-600 transition-colors"
-                        >
-                          <Edit3 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      
-                      {edu.description && (
-                        <p className="text-gray-700 mt-3">{edu.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 border border-dashed border-gray-300 rounded-lg">
-                  <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600 mb-3">Aucune formation</p>
-                  <button
-                    onClick={() => {
-                      setActiveTab('edit');
-                      setEditingSection('education');
-                      navigate('/profile?tab=edit');
-                    }}
-                    className="text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1 mx-auto"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Ajouter une formation</span>
-                  </button>
-                </div>
-              )}
-            </motion.div>
-
-            {/* Skills & Languages */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Compétences</h3>
-                  <button
-                    onClick={() => {
-                      setActiveTab('edit');
-                      setEditingSection('skills');
-                      navigate('/profile?tab=edit');
-                    }}
-                    className="text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Ajouter</span>
-                  </button>
-                </div>
-
-                {(profile?.skills?.length || 0) > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {profile?.skills?.map((skill, index) => (
-                      <div
-                        key={index}
-                        className="px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 flex items-center space-x-2 group"
-                      >
-                        <span className="text-blue-800 font-medium">{skill.name}</span>
-                        <span className="text-xs text-blue-600 bg-white px-2 py-0.5 rounded-full">{skill.level}</span>
-                        <button
-                          onClick={() => handleRemoveSkill(skill.name)}
-                          className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-6 border border-dashed border-gray-300 rounded-lg">
-                    <Award className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-600 mb-3">Aucune compétence</p>
-                    <button
-                      onClick={() => {
-                        setActiveTab('edit');
-                        setEditingSection('skills');
-                        navigate('/profile?tab=edit');
-                      }}
-                      className="text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1 mx-auto"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>Ajouter des compétences</span>
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.9 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Langues</h3>
-                  <button
-                    onClick={() => {
-                      setActiveTab('edit');
-                      setEditingSection('languages');
-                      navigate('/profile?tab=edit');
-                    }}
-                    className="text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Ajouter</span>
-                  </button>
-                </div>
-
-                {(profile?.languages?.length || 0) > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {profile?.languages?.map((language, index) => (
-                      <div key={index} className="text-center p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <p className="font-medium text-gray-900">{language.name}</p>
-                        <p className="text-sm text-gray-600">{language.level}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-6 border border-dashed border-gray-300 rounded-lg">
-                    <Globe className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-600 mb-3">Aucune langue</p>
-                    <button
-                      onClick={() => {
-                        setActiveTab('edit');
-                        setEditingSection('languages');
-                        navigate('/profile?tab=edit');
-                      }}
-                      className="text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1 mx-auto"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>Ajouter des langues</span>
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-            </div>
-
-            {/* Certifications */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.0 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Certifications</h3>
-                <button
-                  onClick={() => {
-                    setActiveTab('edit');
-                    setEditingSection('certifications');
-                    navigate('/profile?tab=edit');
-                  }}
-                  className="text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Ajouter</span>
-                </button>
-              </div>
-
-              {(profile?.certifications?.length || 0) > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profile?.certifications?.map((cert) => (
-                    <div key={cert.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-200 hover:shadow-sm transition-all">
-                      <div className="flex justify-between">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{cert.name}</h4>
-                          <p className="text-blue-600">{cert.issuer}</p>
-                          <div className="flex items-center space-x-1 text-sm text-gray-600 mt-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>
-                              {format(new Date(cert.issueDate), 'MMM yyyy', { locale: fr })}
-                              {cert.expiryDate && ` - ${format(new Date(cert.expiryDate), 'MMM yyyy', { locale: fr })}`}
-                            </span>
-                          </div>
-                          {cert.credentialId && (
-                            <p className="text-sm text-gray-600 mt-1">
-                              <span className="font-medium">ID :</span> {cert.credentialId}
-                            </p>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => handleRemoveCertification(cert.id)}
-                          className="text-gray-400 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 border border-dashed border-gray-300 rounded-lg">
-                  <Award className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600 mb-3">Aucune certification</p>
-                  <button
-                    onClick={() => {
-                      setActiveTab('edit');
-                      setEditingSection('certifications');
-                      navigate('/profile?tab=edit');
-                    }}
-                    className="text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1 mx-auto"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Ajouter une certification</span>
-                  </button>
-                </div>
-              )}
-            </motion.div>
           </div>
         )}
         
@@ -1343,122 +582,11 @@ const Profile: React.FC = () => {
               </div>
 
               {editingSection === 'personal' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
-                    <input
-                      type="text"
-                      value={formData.firstName}
-                      onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Nom</label>
-                    <input
-                      type="text"
-                      value={formData.lastName}
-                      onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Localisation</label>
-                    <input
-                      type="text"
-                      value={formData.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
-                    <input
-                      type="date"
-                      value={formData.dateOfBirth}
-                      onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Titre professionnel</label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Résumé professionnel</label>
-                    <textarea
-                      value={formData.summary}
-                      onChange={(e) => handleInputChange('summary', e.target.value)}
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  {/* Links */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn</label>
-                    <input
-                      type="url"
-                      value={formData.linkedin}
-                      onChange={(e) => handleInputChange('linkedin', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://linkedin.com/in/votre-profil"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">GitHub</label>
-                    <input
-                      type="url"
-                      value={formData.github}
-                      onChange={(e) => handleInputChange('github', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://github.com/votre-profil"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Site web</label>
-                    <input
-                      type="url"
-                      value={formData.website}
-                      onChange={(e) => handleInputChange('website', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://votre-site.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Portfolio</label>
-                    <input
-                      type="url"
-                      value={formData.portfolio}
-                      onChange={(e) => handleInputChange('portfolio', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://votre-portfolio.com"
-                    />
-                  </div>
-                </div>
+                <>
+                  <EditPersonalForm formData={formData} handleInputChange={handleInputChange} />
+                  <hr className="my-6" />
+                  <EditLinksForm formData={formData} handleInputChange={handleInputChange} />
+                </>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
@@ -1543,122 +671,10 @@ const Profile: React.FC = () => {
               {expandedSection === 'experience' && (
                 <>
                   {editingSection === 'experience' && (
-                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-4">Nouvelle expérience</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Entreprise</label>
-                          <input
-                            type="text"
-                            value={formData.newExperience.company}
-                            onChange={(e) => handleNestedInputChange('newExperience', 'company', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Poste</label>
-                          <input
-                            type="text"
-                            value={formData.newExperience.position}
-                            onChange={(e) => handleNestedInputChange('newExperience', 'position', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Date de début</label>
-                          <input
-                            type="date"
-                            value={formData.newExperience.startDate}
-                            onChange={(e) => handleNestedInputChange('newExperience', 'startDate', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Date de fin</label>
-                          <input
-                            type="date"
-                            value={formData.newExperience.endDate}
-                            onChange={(e) => handleNestedInputChange('newExperience', 'endDate', e.target.value)}
-                            disabled={formData.newExperience.current}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={formData.newExperience.current}
-                              onChange={(e) => handleNestedInputChange('newExperience', 'current', e.target.checked)}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700">Poste actuel</span>
-                          </label>
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Localisation</label>
-                          <input
-                            type="text"
-                            value={formData.newExperience.location}
-                            onChange={(e) => handleNestedInputChange('newExperience', 'location', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Ville, Pays"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                          <textarea
-                            value={formData.newExperience.description}
-                            onChange={(e) => handleNestedInputChange('newExperience', 'description', e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Réalisations</label>
-                          {formData.newExperience.achievements.map((achievement: string, index: number) => (
-                            <div key={index} className="flex items-center space-x-2 mb-2">
-                              <input
-                                type="text"
-                                value={achievement}
-                                onChange={(e) => handleAchievementChange(index, e.target.value)}
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Décrivez une réalisation importante"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeAchievementField(index)}
-                                className="text-red-500 hover:text-red-700"
-                                disabled={formData.newExperience.achievements.length <= 1}
-                              >
-                                <X className="h-5 w-5" />
-                              </button>
-                            </div>
-                          ))}
-                          <button
-                            type="button"
-                            onClick={addAchievementField}
-                            className="mt-2 text-blue-600 hover:text-blue-700 text-sm flex items-center space-x-1"
-                          >
-                            <Plus className="h-4 w-4" />
-                            <span>Ajouter une réalisation</span>
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2 mt-4">
-                        <button
-                          onClick={handleAddExperience}
-                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                          Ajouter
-                        </button>
-                        <button
-                          onClick={() => setEditingSection(null)}
-                          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                        >
-                          Annuler
-                        </button>
-                      </div>
-                    </div>
+                    <EditExperienceForm 
+                      onAdd={handleAddExperience}
+                      onCancel={() => setEditingSection(null)}
+                    />
                   )}
 
                   <div className="space-y-4">
@@ -1721,91 +737,10 @@ const Profile: React.FC = () => {
               {expandedSection === 'education' && (
                 <>
                   {editingSection === 'education' && (
-                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-4">Nouvelle formation</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Institution</label>
-                          <input
-                            type="text"
-                            value={formData.newEducation.institution}
-                            onChange={(e) => handleNestedInputChange('newEducation', 'institution', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Diplôme</label>
-                          <input
-                            type="text"
-                            value={formData.newEducation.degree}
-                            onChange={(e) => handleNestedInputChange('newEducation', 'degree', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Domaine d'étude</label>
-                          <input
-                            type="text"
-                            value={formData.newEducation.field}
-                            onChange={(e) => handleNestedInputChange('newEducation', 'field', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Date de début</label>
-                          <input
-                            type="date"
-                            value={formData.newEducation.startDate}
-                            onChange={(e) => handleNestedInputChange('newEducation', 'startDate', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Date de fin</label>
-                          <input
-                            type="date"
-                            value={formData.newEducation.endDate}
-                            onChange={(e) => handleNestedInputChange('newEducation', 'endDate', e.target.value)}
-                            disabled={formData.newEducation.current}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={formData.newEducation.current}
-                              onChange={(e) => handleNestedInputChange('newEducation', 'current', e.target.checked)}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700">En cours</span>
-                          </label>
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Description (optionnel)</label>
-                          <textarea
-                            value={formData.newEducation.description}
-                            onChange={(e) => handleNestedInputChange('newEducation', 'description', e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex space-x-2 mt-4">
-                        <button
-                          onClick={handleAddEducation}
-                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                          Ajouter
-                        </button>
-                        <button
-                          onClick={() => setEditingSection(null)}
-                          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                        >
-                          Annuler
-                        </button>
-                      </div>
-                    </div>
+                    <EditEducationForm 
+                      onAdd={handleAddEducation}
+                      onCancel={() => setEditingSection(null)}
+                    />
                   )}
 
                   <div className="space-y-4">
@@ -1851,94 +786,14 @@ const Profile: React.FC = () => {
                     <ChevronDown className="h-5 w-5 ml-auto" />
                   }
                 </button>
-                {expandedSection === 'skills' && (
-                  <button
-                    onClick={() => setEditingSection(editingSection === 'skills' ? null : 'skills')}
-                    className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors ml-4"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Ajouter</span>
-                  </button>
-                )}
               </div>
 
               {expandedSection === 'skills' && (
-                <>
-                  {editingSection === 'skills' && (
-                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-4">Nouvelle compétence</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
-                          <input
-                            type="text"
-                            value={formData.newSkill.name}
-                            onChange={(e) => handleNestedInputChange('newSkill', 'name', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Niveau</label>
-                          <select
-                            value={formData.newSkill.level}
-                            onChange={(e) => handleNestedInputChange('newSkill', 'level', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          >
-                            <option value="Débutant">Débutant</option>
-                            <option value="Intermédiaire">Intermédiaire</option>
-                            <option value="Avancé">Avancé</option>
-                            <option value="Expert">Expert</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-                          <select
-                            value={formData.newSkill.category}
-                            onChange={(e) => handleNestedInputChange('newSkill', 'category', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          >
-                            <option value="Technique">Technique</option>
-                            <option value="Soft Skills">Soft Skills</option>
-                            <option value="Outils">Outils</option>
-                            <option value="Linguistique">Linguistique</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2 mt-4">
-                        <button
-                          onClick={handleAddSkill}
-                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                          Ajouter
-                        </button>
-                        <button
-                          onClick={() => setEditingSection(null)}
-                          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                        >
-                          Annuler
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex flex-wrap gap-2">
-                    {profile?.skills?.map((skill, index) => (
-                      <div
-                        key={index}
-                        className="px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 flex items-center space-x-2 group"
-                      >
-                        <span className="text-blue-800 font-medium">{skill.name}</span>
-                        <span className="text-xs text-blue-600 bg-white px-2 py-0.5 rounded-full">{skill.level}</span>
-                        <button
-                          onClick={() => handleRemoveSkill(skill.name)}
-                          className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </>
+                <EditSkillsForm
+                  skills={profile?.skills || []}
+                  onAdd={handleAddSkill}
+                  onRemove={handleRemoveSkill}
+                />
               )}
             </div>
 
@@ -1970,70 +825,10 @@ const Profile: React.FC = () => {
               {expandedSection === 'certifications' && (
                 <>
                   {editingSection === 'certifications' && (
-                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-4">Nouvelle certification</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
-                          <input
-                            type="text"
-                            value={formData.newCertification.name}
-                            onChange={(e) => handleNestedInputChange('newCertification', 'name', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Organisme</label>
-                          <input
-                            type="text"
-                            value={formData.newCertification.issuer}
-                            onChange={(e) => handleNestedInputChange('newCertification', 'issuer', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Date d'obtention</label>
-                          <input
-                            type="date"
-                            value={formData.newCertification.issueDate}
-                            onChange={(e) => handleNestedInputChange('newCertification', 'issueDate', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Date d'expiration (optionnel)</label>
-                          <input
-                            type="date"
-                            value={formData.newCertification.expiryDate}
-                            onChange={(e) => handleNestedInputChange('newCertification', 'expiryDate', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">ID de certification (optionnel)</label>
-                          <input
-                            type="text"
-                            value={formData.newCertification.credentialId}
-                            onChange={(e) => handleNestedInputChange('newCertification', 'credentialId', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex space-x-2 mt-4">
-                        <button
-                          onClick={handleAddCertification}
-                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                          Ajouter
-                        </button>
-                        <button
-                          onClick={() => setEditingSection(null)}
-                          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                        >
-                          Annuler
-                        </button>
-                      </div>
-                    </div>
+                    <EditCertificationsForm 
+                      onAdd={handleAddCertification}
+                      onCancel={() => setEditingSection(null)}
+                    />
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2357,12 +1152,12 @@ const Profile: React.FC = () => {
             )}
 
             {/* Completed Recommendations */}
-            {completedRecommendations.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span>Recommandations terminées ({completedRecommendations.length})</span>
-                </h3>
+{completedRecommendations.length > 0 && (
+<div>
+<h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+<CheckCircle className="h-5 w-5 text-green-600" />
+<span>Recommandations terminées ({completedRecommendations.length})</span>
+</h3>
                 
                 <div className="space-y-3">
                   {completedRecommendations.map((recommendation) => (

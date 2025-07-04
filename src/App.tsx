@@ -37,11 +37,13 @@ import {
   AdminAnalytics,
   AdminSystem,
   AdminSettings,
-  AdminLogs
+  AdminLogs,
+  CVGenerator
 } from './components/LazyComponents';
 
 // Loading Component
 import { Loader2, ArrowLeft } from 'lucide-react';
+import LandingPage from './pages/Landing';
 
 const AppContent: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -74,10 +76,11 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Show login form if not authenticated
+  // Routing for unauthenticated users
   if (!isAuthenticated) {
     return (
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/signup" element={<SignUpForm />} />
         <Route path="/reset-password" element={<ResetPasswordForm />} />
@@ -100,7 +103,7 @@ const AppContent: React.FC = () => {
             </div>
           </div>
         } />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
@@ -157,6 +160,11 @@ const AppContent: React.FC = () => {
                   <Route path="/cv-analysis" element={
                     <ProtectedRoute>
                       <CVAnalysis />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/cv-generator" element={
+                    <ProtectedRoute>
+                      <CVGenerator />
                     </ProtectedRoute>
                   } />
                   <Route path="/jobs" element={
