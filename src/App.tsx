@@ -40,6 +40,7 @@ import {
   AdminLogs,
   CVGenerator
 } from './components/LazyComponents';
+import BackendTest from './pages/BackendTest';
 
 // Loading Component
 import { Loader2, ArrowLeft } from 'lucide-react';
@@ -246,6 +247,11 @@ const AppContent: React.FC = () => {
                   <Route path="/admin/settings" element={
                     <ProtectedRoute requiredRole="Admin">
                       <AdminSettings />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/backend-test" element={
+                    <ProtectedRoute requiredRole="Admin">
+                      <BackendTest />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin/database" element={

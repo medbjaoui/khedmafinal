@@ -12,6 +12,7 @@ import {
   Users,
   BarChart3,
   FileSignature,
+  Database,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -51,5 +52,6 @@ export const adminNavConfig: { main: NavItem[], analytics: NavItem[], settings: 
     { path: '/admin/system', icon: Server, label: 'Système' },
     { path: '/admin/security', icon: Shield, label: 'Sécurité' },
     { path: '/admin/settings', icon: Settings, label: 'Configuration' },
+    { path: '/admin/backend-test', icon: Database, label: 'Test Backend' },
   ],
 };
